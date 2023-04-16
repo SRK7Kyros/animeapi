@@ -97,10 +97,12 @@ impl ElementStuff for ElementRef<'_> {
 }
 
 pub mod animeunity {
+    use std::sync::Arc;
+
     use headless_chrome::{Tab};
     use crate::{TabStuff, HtmlStuff, ElementStuff};
     
-    pub fn get_episode_download_link(tab: Tab, anime_link: &str) -> String {
+    pub fn get_episode_download_link(tab: Arc<Tab>, anime_link: &str) -> String {
         tab.ez_navigate(anime_link);
 
         tab.ez_wait_4_element(".plyr__controls__item .plyr__control");
