@@ -75,7 +75,7 @@ pub trait WebsiteScraper {
 }
 
 pub mod animeunity {
-    use crate::{Tab, EzTabLogic, EzHtmlLogic, EzElementLogic};
+    use crate::{Tab, EzTabLogic, EzHtmlLogic, EzElementLogic, Anime};
     use anyhow::Result;
 
     pub const TYPE: (&str, AnimeUnity) = ("https://www.animeunity.tv/", AnimeUnity {});
