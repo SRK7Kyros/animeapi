@@ -61,14 +61,14 @@ pub mod core {
     
     }
     
-    pub struct Anime<'a> {
-        pub category: &'a String,
-        pub name: &'a String,
-        pub link: &'a String,
-        pub link_type: &'a String,
+    pub struct Anime {
+        pub category: String,
+        pub name: String,
+        pub link: String,
+        pub link_type: String,
         pub total_episodes: usize,
         pub available_episodes: usize,
-        pub image_path: &'a String,
+        pub image_path: String,
     }
     
     pub trait WebsiteScraper {
