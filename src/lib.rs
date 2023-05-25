@@ -62,6 +62,7 @@ pub mod core {
     }
     
     pub struct Anime<'a> {
+        pub category: &'a str,
         pub name: &'a str,
         pub link: &'a str,
         pub link_type: &'a str,
