@@ -1,118 +1,102 @@
 extern crate headless_chrome; use headless_chrome::{Browser, LaunchOptions, Tab};
 extern crate scraper; use scraper::{Html, Selector, ElementRef};
-use std::sync::Arc;
+use anyhow::Result;
+use std::{sync::Arc};
 
-pub fn create_browser() -> Browser {
+pub fn create_browser() -> Result<Browser> {
     let launch_options = LaunchOptions::default_builder()
         .build()
         .unwrap();
 
-    let browser = match Browser::new(launch_options) {
-        Ok(browser) => browser,
-        Err(e) => {
-            eprintln!("Failed to create the browser: {}", e);
-            panic!();        
-        }
-    };
-    return browser;
+    let browser = Browser::new(launch_options)?;
+    Ok(browser)
 }
 
-pub fn create_tab(browser: &Browser) -> Arc<Tab> {
-    let tab = match browser.new_tab() {
-        Ok(tab) => tab,
-        Err(e) => {
-            eprintln!("Failed to create the browser: {}", e);
-            panic!();
-        }
-    };
-    return tab;
+pub fn create_tab(browser: &Browser) -> Result<Arc<Tab>> {
+    let tab = browser.new_tab()?;
+    Ok(tab)
 }
 
-trait HtmlStuff {
-    fn get_element(&self, selector: &str) -> ElementRef;
+
+pub trait EzHtmlLogic {
+    fn ez_get_element(&self, selector: &str) -> Result<ElementRef>;
 }
 
-impl HtmlStuff for Html {
-    fn get_element(&self, selector: &str) -> ElementRef {
-        let selector = match Selector::parse(selector) {
-            Ok(selector) => selector,
-            Err(e) => {
-                eprintln!("Ran into an error while instantiating the selector: {}", e);
-                panic!();
-            }
-        };
+impl EzHtmlLogic for Html {
+    fn ez_get_element(&self, selector: &str) -> Result<ElementRef> {
+        let selector = Selector::parse(selector).unwrap();
+        let element = self.select(&selector).next().unwrap();
+        Ok(element)
+    }
+}
+
+
+pub trait EzTabLogic {
+    fn ez_get_source(&self) -> Result<Html>;
+}
+
+impl EzTabLogic for Tab {
+    fn ez_get_source(&self) -> Result<Html> {
+        Ok(Html::parse_fragment(&self.get_content()?))
+    }
+}
+
+
+pub trait EzElementLogic {
+    fn ez_get_attribute(&self, attribute: &str) -> Result<String>;
+    fn ez_get_innertext(&self) -> Result<String>;
+}
+
+impl EzElementLogic for ElementRef<'_> {
+    fn ez_get_attribute(&self, attribute: &str) -> Result<String> {
+        let attribute = self.value().attr(attribute).unwrap();
+        Ok(String::from(attribute))
+    }
     
-        self.select(&selector).next().expect("No element found")
-    }
-}
-
-trait TabStuff {
-    fn ez_navigate(&self, url: &str);
-    fn ez_wait_4_element(&self, selector: &str);
-    fn get_source(&self) -> Html;
-}
-
-impl TabStuff for Tab {
-    fn ez_navigate(&self, url: &str) {
-        match &self.navigate_to(url) {
-            Ok(tab) => tab,
-            Err(e) => {
-                panic!("Navigation failed: {}", e);
-            }
-        };
-    } 
-
-    fn ez_wait_4_element(&self, selector: &str) {
-        match &self.wait_for_element(selector) {
-            Ok(_) => (),
-            Err(e) => {
-                eprintln!("Ran into an error while waiting the element: {}", e);
-                panic!();
-            }
-        }
+    fn ez_get_innertext(&self) -> Result<String> {
+        let innertext = self.text().next().unwrap();
+        Ok(String::from(innertext))
     }
 
-    fn get_source(&self) -> Html{
-        let tab = &self;
-        let content = match tab.get_content() {
-            Ok(content) => content,
-            Err(e) => {
-                eprintln!("Ran into an error while fetching the page source: {}", e);
-                panic!();
-            }
-        };
-    
-        return Html::parse_fragment(&content);
-    }
 }
 
-trait ElementStuff {
-    fn get_attribute(&self, attribute: &str) -> &str;
+pub struct Anime<'a> {
+    pub name: &'a str,
+    pub link: &'a str,
+    pub link_type: &'a str,
+    pub total_episodes: usize,
+    pub available_episodes: usize,
+    pub image_path: &'a str,
 }
 
-impl ElementStuff for ElementRef<'_> {
-    fn get_attribute(&self, attribute: &str) -> &str {
-        self.value().attr(attribute).expect("No corresponding attribute found")
-    }
+pub trait WebsiteScraper {
+    fn get_episode_download_link(tab: Tab, anime_link: &str) -> Result<String>;
+    fn get_title(tab: Tab, anime_link: &str) -> Result<String>;
 }
 
 pub mod animeunity {
-    use std::sync::Arc;
+    use crate::{Tab, EzTabLogic, EzHtmlLogic, EzElementLogic};
+    use anyhow::Result;
 
-    use headless_chrome::{Tab};
-    use crate::{TabStuff, HtmlStuff, ElementStuff};
+    pub const TYPE: (&str, AnimeUnity) = ("https://www.animeunity.tv/", AnimeUnity {});
     
-    pub fn get_episode_download_link(tab: Arc<Tab>, anime_link: &str) -> String {
-        tab.ez_navigate(anime_link);
+    pub struct AnimeUnity {}
 
-        tab.ez_wait_4_element(".plyr__controls__item .plyr__control");
-        
-        let source = tab.get_source();
-
-        let element = source.get_element("a[class=\"plyr__controls__item plyr__control\"]");
-
-        let link: String = String::from(element.get_attribute("href"));
-
-        return link;
+    impl crate::WebsiteScraper for AnimeUnity {
+        fn get_episode_download_link(tab: Tab, anime_link: &str) -> Result<String> {
+            tab.navigate_to(anime_link)?;
+            tab.wait_for_element(".plyr__controls__item .plyr__control")?;
+            let source = tab.ez_get_source()?;
+            let element = source.ez_get_element("a[class=\"plyr__controls__item plyr__control\"]")?;
+            let link = element.ez_get_attribute("href")?;
+            Ok(link)
         }
+    
+        fn get_title(tab: Tab, anime_link: &str) -> Result<String> {
+            tab.navigate_to(anime_link)?;
+            let source = tab.ez_get_source()?;
+            let title = source.ez_get_element("h1.title")?.ez_get_innertext()?;
+            Ok(title)
+        }
+    }
 }
