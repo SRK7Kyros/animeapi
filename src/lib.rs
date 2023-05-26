@@ -63,11 +63,8 @@ pub mod core {
     }
     
     #[derive(Clone, Deserialize, Serialize)]
-    pub struct Anime<'a> {
-        pub name: &'a str,
-        pub data: AnimeData<'a>,
-    }
-
+    pub struct Anime<'a> (&'a str, AnimeData<'a>);
+        
     #[derive(Clone, Deserialize, Serialize)]
 
     pub struct AnimeData<'a> {
@@ -80,16 +77,16 @@ pub mod core {
     
     impl Default for Anime<'_> {
         fn default() -> Anime<'static> {
-            Anime {
-                name: "",
-                data: AnimeData {
+            Anime (
+                "", 
+                AnimeData {
                     link: "",
                     link_type: "",
                     total_episodes: 0,
                     available_episodes: 0,
                     image_path: "",
                 }
-            }
+            )
         }
     }
     
