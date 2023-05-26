@@ -72,6 +72,20 @@ pub mod core {
         pub available_episodes: usize,
         pub image_path: &'a str,
     }
+
+    impl Default for Anime<'_> {
+        fn default() -> Anime<'static> {
+            Anime {
+                category: "",
+                name: "",
+                link: "",
+                link_type: "",
+                total_episodes: 0,
+                available_episodes: 0,
+                image_path: "",
+            }
+        }
+    }
     
     pub trait WebsiteScraper {
         fn get_episode_download_link(tab: Tab, anime_link: &str) -> Result<String>;
