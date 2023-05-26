@@ -47,6 +47,7 @@ dependencies = [
  "anyhow",
  "headless_chrome",
  "scraper",
+ "serde",
 ]
 
 [[package]]

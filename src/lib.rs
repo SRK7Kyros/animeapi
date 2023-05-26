@@ -61,6 +61,7 @@ pub mod core {
     
     }
     
+    #[derive(Clone)]
     pub struct Anime<'a> {
         pub category: &'a str,
         pub name: &'a str,

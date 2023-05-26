@@ -9,3 +9,4 @@ edition = "2021"
 anyhow = "1.0.70"
 scraper = "0.16.0"
 headless_chrome = {git = "https://github.com/atroche/rust-headless-chrome", features = ["fetch"]}
+serde = "1.0.163"
