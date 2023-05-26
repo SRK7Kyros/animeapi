@@ -2,6 +2,7 @@ pub mod core {
     extern crate headless_chrome; use headless_chrome::{Browser, LaunchOptions, Tab};
     extern crate scraper; use scraper::{Html, Selector, ElementRef};
     use anyhow::Result;
+    use serde::{Serialize, Deserialize};
     use std::{sync::Arc};
 
     pub fn create_browser() -> Result<Browser> {
@@ -61,7 +62,7 @@ pub mod core {
     
     }
     
-    #[derive(Clone)]
+    #[derive(Clone, Deserialize, Serialize)]
     pub struct Anime<'a> {
         pub category: &'a str,
         pub name: &'a str,
