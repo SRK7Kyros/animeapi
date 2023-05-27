@@ -4,6 +4,7 @@ pub mod core {
     use anyhow::Result;
     use serde::{Serialize, Deserialize};
     use std::{sync::Arc};
+    use std::collections::HashMap;
 
     pub fn create_browser() -> Result<Browser> {
         let launch_options = LaunchOptions::default_builder()
@@ -61,12 +62,24 @@ pub mod core {
         }
     
     }
-    
+
+    pub struct AnimeList<'a> {
+        map: HashMap<String, Anime<'a>>
+    }
+
+    pub trait AnimeListStuff {
+        fn join(self, new_entry: HashMap<String, Anime>);
+    }
+
+    impl AnimeListStuff for AnimeList<'static> {
+        fn join(self, new_entry: Anime<'static>) {
+            self.map.insert(new_entry.name.lowercase(), new_entry);
+        }
+    }
+
     #[derive(Clone, Deserialize, Serialize)]
-    pub struct Anime<'a> (&'a str, AnimeData<'a>);
-        
-    #[derive(Clone, Deserialize, Serialize)]
-    pub struct AnimeData<'a> {
+    pub struct Anime<'a> {
+        pub name: &'a str,
         pub link: &'a str,
         pub link_type: &'a str,
         pub total_episodes: usize,
@@ -76,19 +89,18 @@ pub mod core {
     
     impl Default for Anime<'_> {
         fn default() -> Anime<'static> {
-            Anime (
-                "", 
-                AnimeData {
-                    link: "",
-                    link_type: "",
-                    total_episodes: 0,
-                    available_episodes: 0,
-                    image_path: "",
-                }
-            )
+            Anime {
+                name: "",
+                link: "",
+                link_type: "",
+                total_episodes: 0,
+                available_episodes: 0,
+                image_path: "",
+            }
         }
     }
-    
+
+
     pub trait WebsiteScraper {
         fn get_episode_download_link(tab: Tab, anime_link: &str) -> Result<String>;
         fn get_title(tab: Tab, anime_link: &str) -> Result<String>;
