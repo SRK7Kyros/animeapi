@@ -67,16 +67,6 @@ pub mod core {
         map: HashMap<String, Anime<'a>>
     }
 
-    pub trait AnimeListStuff {
-        fn join(self, new_entry: HashMap<String, Anime>);
-    }
-
-    impl AnimeListStuff for AnimeList<'static> {
-        fn join(self, new_entry: Anime<'static>) {
-            self.map.insert(new_entry.name.lowercase(), new_entry);
-        }
-    }
-
     #[derive(Clone, Deserialize, Serialize)]
     pub struct Anime<'a> {
         pub name: &'a str,
