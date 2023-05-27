@@ -66,7 +66,6 @@ pub mod core {
     pub struct Anime<'a> (&'a str, AnimeData<'a>);
         
     #[derive(Clone, Deserialize, Serialize)]
-
     pub struct AnimeData<'a> {
         pub link: &'a str,
         pub link_type: &'a str,
