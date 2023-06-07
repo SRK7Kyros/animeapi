@@ -83,7 +83,7 @@ pub mod core {
         }
     }
 
-    trait AnimeStuff {
+    pub trait AnimeStuff {
         fn from_json(&mut self, json: &'static Value);
         fn to_json(&self) -> Value;
     }
