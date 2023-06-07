@@ -90,7 +90,7 @@ pub mod core {
 
     impl AnimeStuff for Anime<'_> {
         fn from_json(json: &Value) -> Anime {
-            let key = json.as_object().unwrap().keys().last().unwrap();
+            let key: &String = json.as_object().unwrap().keys().last().unwrap();
 
             let output = Anime {
                 name: key,
