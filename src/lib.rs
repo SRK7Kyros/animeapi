@@ -84,12 +84,12 @@ pub mod core {
     }
 
     pub trait AnimeStuff {
-        fn from_json(json: &'static Value) -> Anime;
+        fn from_json(json: &Value) -> Anime;
         fn to_json(&self) -> Value;
     }
 
-    impl AnimeStuff for Anime<'static> {
-        fn from_json(json: &'static Value) -> Anime {
+    impl AnimeStuff for Anime<'_> {
+        fn from_json(json: &Value) -> Anime {
             let key = json.as_object().unwrap().keys().last().unwrap();
 
             let output = Anime {
