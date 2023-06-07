@@ -92,13 +92,15 @@ pub mod core {
         fn from_json(json: &'static Value) -> Anime {
             let key = json.as_object().unwrap().keys().last().unwrap();
 
-            let mut output = Anime::default();
-            output.name = key;
-            output.link = json[0]["link"].as_str().unwrap();
-            output.link_type = json[0]["link_type"].as_str().unwrap();
-            output.total_episodes = json[0]["total_episodes"].as_u64().unwrap() as usize;
-            output.available_episodes = json[0]["available_episodes"].as_u64().unwrap() as usize;
-            output.image_path = json[0]["image_path"].as_str().unwrap();
+            let output = Anime {
+                name: key,
+                link: json[0]["link"].as_str().unwrap(),
+                link_type: json[0]["link_type"].as_str().unwrap(),
+                total_episodes: json[0]["total_episodes"].as_u64().unwrap() as usize,
+                available_episodes: json[0]["available_episodes"].as_u64().unwrap() as usize,
+                image_path: json[0]["image_path"].as_str().unwrap(),
+            };
+
             output
         }
         fn to_json(&self) -> Value {
