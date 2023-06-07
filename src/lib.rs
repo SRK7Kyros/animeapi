@@ -95,11 +95,11 @@ pub mod core {
 
             let output = Anime {
                 name: key,
-                link: json[0]["link"].as_str().unwrap(),
-                link_type: json[0]["link_type"].as_str().unwrap(),
-                total_episodes: json[0]["total_episodes"].as_u64().unwrap() as usize,
-                available_episodes: json[0]["available_episodes"].as_u64().unwrap() as usize,
-                image_path: json[0]["image_path"].as_str().unwrap(),
+                link: json[key]["link"].as_str().unwrap(),
+                link_type: json[key]["link_type"].as_str().unwrap(),
+                total_episodes: json[key]["total_episodes"].as_u64().unwrap() as usize,
+                available_episodes: json[key]["available_episodes"].as_u64().unwrap() as usize,
+                image_path: json[key]["image_path"].as_str().unwrap(),
             };
 
             output
