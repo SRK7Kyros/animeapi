@@ -48,6 +48,7 @@ dependencies = [
  "headless_chrome",
  "scraper",
  "serde",
+ "serde_json",
 ]
 
 [[package]]
