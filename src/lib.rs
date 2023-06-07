@@ -84,20 +84,22 @@ pub mod core {
     }
 
     pub trait AnimeStuff {
-        fn from_json(&mut self, json: &'static Value);
+        fn from_json(json: &'static Value) -> Anime;
         fn to_json(&self) -> Value;
     }
 
     impl AnimeStuff for Anime<'static> {
-        fn from_json(self: &mut Anime<'static>, json: &'static Value) {
+        fn from_json(json: &'static Value) -> Anime {
             let key = json.as_object().unwrap().keys().last().unwrap();
 
-            self.name = key;
-            self.link = json[0]["link"].as_str().unwrap();
-            self.link_type = json[0]["link_type"].as_str().unwrap();
-            self.total_episodes = json[0]["total_episodes"].as_u64().unwrap() as usize;
-            self.available_episodes = json[0]["available_episodes"].as_u64().unwrap() as usize;
-            self.image_path = json[0]["image_path"].as_str().unwrap();
+            let mut output = Anime::default();
+            output.name = key;
+            output.link = json[0]["link"].as_str().unwrap();
+            output.link_type = json[0]["link_type"].as_str().unwrap();
+            output.total_episodes = json[0]["total_episodes"].as_u64().unwrap() as usize;
+            output.available_episodes = json[0]["available_episodes"].as_u64().unwrap() as usize;
+            output.image_path = json[0]["image_path"].as_str().unwrap();
+            output
         }
         fn to_json(&self) -> Value {
             let output = json!({
