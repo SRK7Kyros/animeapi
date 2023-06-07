@@ -70,7 +70,7 @@ pub mod core {
         pub image_path: &'a str,
     }
 
-    impl Default for Anime<'_> {
+    impl Default for Anime<'static> {
         fn default() -> Anime<'static> {
             Anime {
                 name: "",
@@ -84,22 +84,30 @@ pub mod core {
     }
 
     trait AnimeStuff {
-        fn from_json(&self, json: Value) -> Anime<'static>;
+        fn from_json(&mut self, json: &'static Value);
         fn to_json(&self) -> Value;
     }
 
-    impl AnimeStuff for Anime<'_> {
-        fn from_json(json: Value) -> Anime<'static> {}
+    impl AnimeStuff for Anime<'static> {
+        fn from_json(self: &mut Anime<'static>, json: &'static Value) {
+            let key = json.as_object().unwrap().keys().last().unwrap();
+
+            self.name = key;
+            self.link = json[0]["link"].as_str().unwrap();
+            self.link_type = json[0]["link_type"].as_str().unwrap();
+            self.total_episodes = json[0]["total_episodes"].as_u64().unwrap() as usize;
+            self.available_episodes = json[0]["available_episodes"].as_u64().unwrap() as usize;
+            self.image_path = json[0]["image_path"].as_str().unwrap();
+        }
         fn to_json(&self) -> Value {
-            let output: Value = json!({
-                &self.name: {
-                    "link": &self.link,
-                    "link_type": &self.link_type,
-                    "total_episodes": &self.total_episodes,
-                    "available_episodes": &self.available_episodes,
-                    "image_path": &self.image_path,
-                }
-            });
+            let output = json!({
+                * &self.name: {
+                "link": self.link,
+                "link_type": &self.link_type,
+                "total_episodes": &self.total_episodes,
+                "available_episodes": &self.available_episodes,
+                "image_path": &self.image_path,
+            }});
 
             return output;
         }
