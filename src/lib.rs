@@ -3,6 +3,7 @@ pub mod core {
     use headless_chrome::{Browser, LaunchOptions, Tab};
     extern crate scraper;
     use anyhow::Result;
+    use core::fmt;
     use scraper::{ElementRef, Html, Selector};
     use serde::{Deserialize, Serialize};
     use serde_json::json;
@@ -60,7 +61,7 @@ pub mod core {
         }
     }
 
-    #[derive(Clone, Deserialize, Serialize)]
+    #[derive(Clone, Deserialize, Serialize, fmt::Debug)]
     pub struct Anime<'a> {
         pub name: &'a str,
         pub link: &'a str,
