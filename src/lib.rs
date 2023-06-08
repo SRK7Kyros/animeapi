@@ -1,16 +1,13 @@
 pub mod core {
     extern crate headless_chrome;
-    use headless_chrome::browser::tab::NoElementFound;
     use headless_chrome::{Browser, LaunchOptions, Tab};
     extern crate scraper;
     use anyhow::{Error as AHError, Ok as AHOk, Result as AHResult};
     use core::fmt;
-    use scraper::error::SelectorErrorKind;
     use scraper::{ElementRef, Html, Selector};
     use serde::{Deserialize, Serialize};
     use serde_json::json;
     use serde_json::Value;
-    use std::error::Error;
     use std::sync::Arc;
 
     pub fn create_browser() -> AHResult<Browser> {
@@ -44,12 +41,32 @@ pub mod core {
     }
 
     pub trait EzTabLogic {
-        fn ez_get_source(&self) -> AHResult<Html>;
+        fn ez_get_source(&self) -> AHResult<Html, String>;
+        fn ez_navigate(&self, url: &str) -> AHResult<(), String>;
+        fn ez_wait_for_element(&self, selector: &str) -> AHResult<(), String>;
     }
 
     impl EzTabLogic for Tab {
-        fn ez_get_source(&self) -> AHResult<Html> {
-            Ok(Html::parse_fragment(&self.get_content()?))
+        fn ez_get_source(&self) -> AHResult<Html, String> {
+            let content = &self.get_content();
+            let content = match content {
+                Ok(e) => e,
+                Err(e) => return Err(e.to_string()),
+            };
+
+            Ok(Html::parse_fragment(content))
+        }
+        fn ez_navigate(&self, url: &str) -> AHResult<(), String> {
+            match &self.navigate_to(url) {
+                Ok(e) => return Ok(()),
+                Err(e) => return Err(e.to_string()),
+            }
+        }
+        fn ez_wait_for_element(&self, selector: &str) -> AHResult<(), String> {
+            match &self.wait_for_element(selector) {
+                Ok(e) => return Ok(()),
+                Err(e) => return Err(e.to_string()),
+            }
         }
     }
 
@@ -66,7 +83,6 @@ pub mod core {
             };
             Ok(String::from(attribute))
         }
-
         fn ez_get_innertext(&self) -> AHResult<String, &str> {
             let innertext = match self.text().next() {
                 Some(e) => e,
@@ -135,8 +151,8 @@ pub mod core {
     }
 
     pub trait WebsiteScraper {
-        fn get_episode_download_link(tab: Tab, anime_link: &str) -> AHResult<String>;
-        fn get_title(tab: Tab, anime_link: &str) -> AHResult<String>;
+        fn get_episode_download_link(tab: Tab, anime_link: &str) -> AHResult<String, String>;
+        fn get_title(tab: Tab, anime_link: &str) -> AHResult<String, String>;
     }
 }
 
@@ -150,9 +166,9 @@ pub mod animeunity {
     pub struct AnimeUnity {}
 
     impl crate::core::WebsiteScraper for AnimeUnity {
-        fn get_episode_download_link(tab: Tab, anime_link: &str) -> AHResult<String> {
-            tab.navigate_to(anime_link)?;
-            tab.wait_for_element(".plyr__controls__item .plyr__control")?;
+        fn get_episode_download_link(tab: Tab, anime_link: &str) -> AHResult<String, String> {
+            tab.ez_navigate(anime_link)?;
+            tab.ez_wait_for_element(".plyr__controls__item .plyr__control")?;
             let source = tab.ez_get_source()?;
             let element =
                 source.ez_get_element("a[class=\"plyr__controls__item plyr__control\"]")?;
@@ -160,8 +176,8 @@ pub mod animeunity {
             Ok(link)
         }
 
-        fn get_title(tab: Tab, anime_link: &str) -> AHResult<String, &str> {
-            tab.navigate_to(anime_link)?;
+        fn get_title(tab: Tab, anime_link: &str) -> AHResult<String, String> {
+            tab.ez_navigate(anime_link)?;
             let source = tab.ez_get_source()?;
             let title = source.ez_get_element("h1.title")?.ez_get_innertext()?;
             Ok(title)
