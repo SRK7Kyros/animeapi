@@ -1,62 +1,77 @@
 pub mod core {
     extern crate headless_chrome;
+    use headless_chrome::browser::tab::NoElementFound;
     use headless_chrome::{Browser, LaunchOptions, Tab};
     extern crate scraper;
-    use anyhow::Result;
+    use anyhow::{Error as AHError, Ok as AHOk, Result as AHResult};
     use core::fmt;
+    use scraper::error::SelectorErrorKind;
     use scraper::{ElementRef, Html, Selector};
     use serde::{Deserialize, Serialize};
     use serde_json::json;
     use serde_json::Value;
+    use std::error::Error;
     use std::sync::Arc;
 
-    pub fn create_browser() -> Result<Browser> {
+    pub fn create_browser() -> AHResult<Browser> {
         let launch_options = LaunchOptions::default_builder().build().unwrap();
 
         let browser = Browser::new(launch_options)?;
         Ok(browser)
     }
 
-    pub fn create_tab(browser: &Browser) -> Result<Arc<Tab>> {
+    pub fn create_tab(browser: &Browser) -> AHResult<Arc<Tab>> {
         let tab = browser.new_tab()?;
         Ok(tab)
     }
 
     pub trait EzHtmlLogic {
-        fn ez_get_element(&self, selector: &str) -> Result<ElementRef>;
+        fn ez_get_element(&self, selector: &str) -> AHResult<ElementRef, &str>;
     }
 
     impl EzHtmlLogic for Html {
-        fn ez_get_element(&self, selector: &str) -> Result<ElementRef> {
-            let selector = Selector::parse(selector).unwrap();
-            let element = self.select(&selector).next().unwrap();
+        fn ez_get_element(&self, selector: &str) -> AHResult<ElementRef, &str> {
+            let selector = match Selector::parse(selector) {
+                Ok(t) => t,
+                Err(t) => return Err("Invalid selector"),
+            };
+            let element = match self.select(&selector).next() {
+                Some(e) => e,
+                None => return Err("No element corresponding to the selector found"),
+            };
             Ok(element)
         }
     }
 
     pub trait EzTabLogic {
-        fn ez_get_source(&self) -> Result<Html>;
+        fn ez_get_source(&self) -> AHResult<Html>;
     }
 
     impl EzTabLogic for Tab {
-        fn ez_get_source(&self) -> Result<Html> {
+        fn ez_get_source(&self) -> AHResult<Html> {
             Ok(Html::parse_fragment(&self.get_content()?))
         }
     }
 
     pub trait EzElementLogic {
-        fn ez_get_attribute(&self, attribute: &str) -> Result<String>;
-        fn ez_get_innertext(&self) -> Result<String>;
+        fn ez_get_attribute(&self, attribute: &str) -> AHResult<String, &str>;
+        fn ez_get_innertext(&self) -> AHResult<String, &str>;
     }
 
     impl EzElementLogic for ElementRef<'_> {
-        fn ez_get_attribute(&self, attribute: &str) -> Result<String> {
-            let attribute = self.value().attr(attribute).unwrap();
+        fn ez_get_attribute(&self, attribute: &str) -> AHResult<String, &str> {
+            let attribute = match self.value().attr(attribute) {
+                Some(e) => e,
+                None => return Err("Error while getting attribute"),
+            };
             Ok(String::from(attribute))
         }
 
-        fn ez_get_innertext(&self) -> Result<String> {
-            let innertext = self.text().next().unwrap();
+        fn ez_get_innertext(&self) -> AHResult<String, &str> {
+            let innertext = match self.text().next() {
+                Some(e) => e,
+                None => return Err("Error while getting innertext"),
+            };
             Ok(String::from(innertext))
         }
     }
@@ -120,14 +135,14 @@ pub mod core {
     }
 
     pub trait WebsiteScraper {
-        fn get_episode_download_link(tab: Tab, anime_link: &str) -> Result<String>;
-        fn get_title(tab: Tab, anime_link: &str) -> Result<String>;
+        fn get_episode_download_link(tab: Tab, anime_link: &str) -> AHResult<String>;
+        fn get_title(tab: Tab, anime_link: &str) -> AHResult<String>;
     }
 }
 
 pub mod animeunity {
     use crate::core::{EzElementLogic, EzHtmlLogic, EzTabLogic};
-    use anyhow::Result;
+    use anyhow::{Error as AHError, Ok as AHOk, Result as AHResult};
     use headless_chrome::Tab;
 
     pub const TYPE: (&str, AnimeUnity) = ("https://www.animeunity.tv/", AnimeUnity {});
@@ -135,7 +150,7 @@ pub mod animeunity {
     pub struct AnimeUnity {}
 
     impl crate::core::WebsiteScraper for AnimeUnity {
-        fn get_episode_download_link(tab: Tab, anime_link: &str) -> Result<String> {
+        fn get_episode_download_link(tab: Tab, anime_link: &str) -> AHResult<String> {
             tab.navigate_to(anime_link)?;
             tab.wait_for_element(".plyr__controls__item .plyr__control")?;
             let source = tab.ez_get_source()?;
@@ -145,7 +160,7 @@ pub mod animeunity {
             Ok(link)
         }
 
-        fn get_title(tab: Tab, anime_link: &str) -> Result<String> {
+        fn get_title(tab: Tab, anime_link: &str) -> AHResult<String, &str> {
             tab.navigate_to(anime_link)?;
             let source = tab.ez_get_source()?;
             let title = source.ez_get_element("h1.title")?.ez_get_innertext()?;
