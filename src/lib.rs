@@ -176,9 +176,9 @@ pub mod core {
     }
 
     pub trait WebsiteScraper {
-        fn query(tab: Tab, input: String) -> Result<Vec<Anime>, String>;
-        fn get_episode_download_link(tab: Tab) -> AHResult<String, String>;
-        fn get_title(tab: Tab) -> AHResult<String, String>;
+        fn query(tab: Arc<Tab>, input: String) -> Result<Vec<Anime>, String>;
+        fn get_episode_download_link(tab: Arc<Tab>) -> AHResult<String, String>;
+        fn get_title(tab: Arc<Tab>) -> AHResult<String, String>;
     }
 }
 
@@ -186,13 +186,14 @@ pub mod animeunity {
     use crate::core::{Anime, EzElementLogic, EzElementRefLogic, EzHtmlLogic, EzTabLogic};
     use anyhow::{Error as AHError, Ok as AHOk, Result as AHResult};
     use headless_chrome::Tab;
+    use std::sync::Arc;
 
     pub const TYPE: (&str, AnimeUnity) = ("https://www.animeunity.tv/", AnimeUnity {});
 
     pub struct AnimeUnity {}
 
     impl crate::core::WebsiteScraper for AnimeUnity {
-        fn get_episode_download_link(tab: Tab) -> AHResult<String, String> {
+        fn get_episode_download_link(tab: Arc<Tab>) -> AHResult<String, String> {
             let source = tab.ez_get_source()?;
             let element =
                 source.ez_get_element("a[class=\"plyr__controls__item plyr__control\"]")?;
@@ -200,13 +201,13 @@ pub mod animeunity {
             Ok(link)
         }
 
-        fn get_title(tab: Tab) -> AHResult<String, String> {
+        fn get_title(tab: Arc<Tab>) -> AHResult<String, String> {
             let source = tab.ez_get_source()?;
             let title = source.ez_get_element("h1.title")?.ez_get_innertext()?;
             Ok(title)
         }
 
-        fn query(tab: Tab, input: String) -> Result<Vec<Anime>, String> {
+        fn query(tab: Arc<Tab>, input: String) -> Result<Vec<Anime>, String> {
             let searchbutton = tab.ez_wait_for_element("fas fa-search text-white")?;
             searchbutton.ez_click()?;
 
