@@ -176,9 +176,9 @@ pub mod core {
     }
 
     pub trait WebsiteScraper {
-        fn query(tab: Arc<Tab>, input: String) -> Result<Vec<Anime>, String>;
-        fn get_episode_download_link(tab: Arc<Tab>) -> AHResult<String, String>;
-        fn get_title(tab: Arc<Tab>) -> AHResult<String, String>;
+        fn query(tab: std::sync::Arc<Tab>, input: String) -> Result<Vec<Anime>, String>;
+        fn get_episode_download_link(tab: std::sync::Arc<Tab>) -> AHResult<String, String>;
+        fn get_title(tab: std::sync::Arc<Tab>) -> AHResult<String, String>;
     }
 }
 
