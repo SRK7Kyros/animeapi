@@ -79,7 +79,7 @@ pub mod animeunity {
     }
 
     async fn start_geckodriver() -> AHResult<Output> {
-        Ok(std::process::Command::new("/Users/giulio/Desktop/geckodriver &").output()?)
+        Ok(std::process::Command::new("/Users/giulio/Desktop/geckodriver &        ").output()?)
     }
 
     pub async fn get_token() -> AHResult<String> {
