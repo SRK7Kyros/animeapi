@@ -79,11 +79,12 @@ pub mod animeunity {
     }
 
     async fn start_geckodriver() -> AHResult<Output> {
-        Ok(std::process::Command::new("geckodriver").output()?)
+        Ok(std::process::Command::new("geckodriver &").output()?)
     }
 
     pub async fn get_token() -> AHResult<String> {
-        let _output = start_geckodriver();
+        let output = start_geckodriver().await?;
+        println!("{}", output.status);
 
         let client = ClientBuilder::native()
             .connect("https://localhost:4444")
