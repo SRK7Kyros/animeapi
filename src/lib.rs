@@ -10,18 +10,17 @@ use thirtyfour::{prelude::*, FirefoxCapabilities};
 pub async fn get_driver() -> AHResult<WebDriver> {
     let mut capabilities = DesiredCapabilities::firefox();
     capabilities.add_firefox_arg("-headless")?;
-    let driver = WebDriver::new("http://localhost:4444", capabilities).await?;
+    let driver = WebDriver::new("http://127.0.0.1:4444", capabilities).await?;
     Ok(driver)
 }
 
 pub async fn start_geckodriver() -> AHResult<()> {
     let f = tokio::spawn(async move {
-        let output = std::process::Command::new("/Users/giulio/Desktop/geckodriver").output()?;
         println!("got here2");
+        let output = std::process::Command::new("/Users/giulio/Desktop/geckodriver").output()?;
 
         let stdout = String::from_utf8(output.stdout)?;
         let stderr = String::from_utf8(output.stderr)?;
-        println!("got here2");
 
         if stderr.contains("error") {
             println!("{stderr}");
