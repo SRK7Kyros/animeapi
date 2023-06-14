@@ -121,6 +121,8 @@ pub mod animeunity {
             .goto("https://www.animeunity.tv/anime/1469-naruto")
             .await?;
 
+        tokio::time::sleep(tokio::time::Duration::from_secs(10)).await;
+
         let requests = driver
             .execute("return window.performance.getEntries();", vec![])
             .await?;
