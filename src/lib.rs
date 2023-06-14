@@ -1,5 +1,5 @@
 use anyhow::{Error as AHError, Ok as AHOk, Result as AHResult};
-use hyper::Client;
+use hyper::{Client, StatusCode};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::fmt;
@@ -23,7 +23,13 @@ pub async fn start_geckodriver() -> AHResult<()> {
     let url = "http://127.0.0.1:4444/status".parse::<hyper::Uri>()?;
     println!("got here");
 
-    let res = sender.get(url).await?.status();
+    let res = match sender.get(url).await {
+        Ok(e) => e.status(),
+        Err(e) => {
+            println!("{}", e.to_string())
+            StatusCode::default()
+        }
+    };
     println!("got here");
 
     println!("status code: {}", res);
