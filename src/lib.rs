@@ -24,7 +24,7 @@ pub async fn start_geckodriver() -> AHResult<()> {
             std::process::Command::new("/Users/giulio/Desktop/geckodriver").output();
         });
     } else {
-        println!("Status: {}", res.unwrap().status())
+        println!("Status: {:?}", res.unwrap().body())
     }
     Ok(())
 }
