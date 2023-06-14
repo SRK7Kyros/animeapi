@@ -7,6 +7,7 @@ use thirtyfour::prelude::*;
 use tokio::{
     io::{stdout, AsyncWriteExt},
     net::TcpStream,
+    process::Child,
     spawn,
 };
 
@@ -21,23 +22,9 @@ pub async fn get_driver(headless: bool) -> AHResult<WebDriver> {
     Ok(driver)
 }
 
-pub async fn start_geckodriver() -> AHResult<()> {
-    let sender = Client::new();
-
-    let url = "http://127.0.0.1:4444/status".parse::<hyper::Uri>()?;
-
-    let mut res = sender.get(url).await;
-    if res.is_err() {
-        spawn(async move {
-            std::process::Command::new("/Users/giulio/Desktop/geckodriver").output();
-        });
-    } else {
-        while let Some(chunk) = res.as_mut().unwrap().body_mut().data().await {
-            let robo = &chunk?.to_vec();
-            println!("{}", String::from_utf8(robo.to_owned())?);
-        }
-    }
-    Ok(())
+pub async fn start_geckodriver() -> AHResult<Child> {
+    let robo = tokio::process::Command::new("/Users/giulio/Desktop/geckodriver").spawn()?;
+    return Ok(robo);
 }
 
 pub async fn stop_geckodriver(driver: Option<WebDriver>) -> AHResult<()> {
@@ -128,7 +115,7 @@ pub mod animeunity {
     }
 
     pub async fn get_token(headless: bool) -> AHResult<String> {
-        let _ = crate::start_geckodriver().await;
+        let mut server = crate::start_geckodriver().await?;
 
         let driver = crate::get_driver(headless).await?;
 
@@ -145,6 +132,7 @@ pub mod animeunity {
         let requests = serde_json::to_string_pretty(requests.json())?;
 
         driver.quit().await?;
+        server.kill().await?;
         Ok(requests)
     }
 }
