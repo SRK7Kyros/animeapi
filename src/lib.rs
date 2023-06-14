@@ -24,7 +24,7 @@ pub async fn start_geckodriver() -> AHResult<()> {
     println!("got here");
 
     let res = sender.get(url).await;
-    if !res.is_err() {
+    if res.is_err() {
         spawn(async move {
             std::process::Command::new("/Users/giulio/Desktop/geckodriver").output();
         });
