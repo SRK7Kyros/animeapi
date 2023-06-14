@@ -23,20 +23,12 @@ pub async fn start_geckodriver() -> AHResult<()> {
     let url = "http://127.0.0.1:4444/status".parse::<hyper::Uri>()?;
     println!("got here");
 
-    let res = match sender.get(url).await {
-        Ok(e) => e.status(),
-        Err(e) => {
-            println!("{}", e.to_string());
-            StatusCode::default()
-        }
-    };
-    println!("got here");
-
-    println!("status code: {}", res);
-
-    spawn(async move {
-        std::process::Command::new("/Users/giulio/Desktop/geckodriver").output();
-    });
+    let res = sender.get(url).await;
+    if !res.is_err() {
+        spawn(async move {
+            std::process::Command::new("/Users/giulio/Desktop/geckodriver").output();
+        });
+    }
     Ok(())
 }
 
