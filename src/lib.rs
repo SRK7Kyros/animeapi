@@ -8,9 +8,9 @@ use thirtyfour::common::capabilities;
 use thirtyfour::{prelude::*, FirefoxCapabilities};
 
 pub async fn get_driver() -> AHResult<WebDriver> {
-    let mut capabilities = FirefoxCapabilities::new();
-    capabilities.add_firefox_arg("-headless");
-    let driver = WebDriver::new("http://127.0.0.1", capabilities).await?;
+    let mut capabilities = DesiredCapabilities::firefox();
+    capabilities.add_firefox_arg("-headless")?;
+    let driver = WebDriver::new("http://127.0.0.1:4444", capabilities).await?;
     Ok(driver)
 }
 
