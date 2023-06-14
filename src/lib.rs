@@ -1,26 +1,37 @@
 use anyhow::{Ok as AHOk, Result as AHResult};
-use fantoccini::{Client, ClientBuilder};
 use serde::ser::StdError;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::fmt;
+use std::process::Output;
+use thirtyfour::common::capabilities;
+use thirtyfour::{prelude::*, FirefoxCapabilities};
 
-pub async fn get_client() -> AHResult<Client> {
-    let mut client = ClientBuilder::native();
-    let client = client
-        .capabilities(
-            json!({
-                "moz:firefoxOptions": {
-                    "args":["-headless"]
-                }
-            })
-            .as_object()
-            .unwrap()
-            .to_owned(),
-        )
-        .connect("http://127.0.0.1:4444/")
-        .await?;
-    Ok(client)
+pub async fn get_driver() -> AHResult<WebDriver> {
+    let mut capabilities = FirefoxCapabilities::new();
+    capabilities.add_firefox_arg("-headless");
+    let driver = WebDriver::new("http://127.0.0.1", capabilities).await?;
+    Ok(driver)
+}
+
+pub async fn start_geckodriver() -> AHResult<()> {
+    tokio::spawn(async move {
+        std::process::Command::new("/Users/giulio/Desktop/geckodriver").output()
+    });
+    Ok(())
+}
+
+pub async fn stop_geckodriver(driver: Option<WebDriver>) -> AHResult<()> {
+    let driver = match driver {
+        Some(e) => e,
+        None => {
+            let driver = get_driver().await?;
+            driver
+        }
+    };
+    driver.quit().await?;
+    println!("Successfully closed");
+    Ok(())
 }
 
 #[derive(Clone, Deserialize, Serialize, fmt::Debug)]
@@ -85,9 +96,9 @@ pub mod animeunity {
     use crate::Anime;
     use anyhow::{Ok, Result as AHResult};
     use core::time;
-    use fantoccini::ClientBuilder;
     use hyper::{Request, Uri};
     use std::{process::Output, thread, vec};
+    use thirtyfour::prelude::*;
     use tokio::net::TcpStream;
 
     const LINK: &str = "https://www.animeunity.tv/";
@@ -102,22 +113,17 @@ pub mod animeunity {
     }
 
     pub async fn get_token() -> AHResult<String> {
-        let output = start_geckodriver().await?;
-        println!("status: {}", output.status);
+        let _ = start_geckodriver();
 
-        let client = ClientBuilder::native()
-            .connect("https://localhost:4444")
-            .await?;
-
-        client
-            .goto("https://www.animeunity.tv/anime/1469-naruto")
-            .await?;
+        let driver = crate::get_driver().await?;
 
         thread::sleep(time::Duration::from_secs(5));
 
-        let requests = client
+        let requests = driver
             .execute("return window.performance.getEntries();", vec![])
             .await?;
+
+        let requests = serde_json::to_string_pretty(requests.json())?;
 
         println!("{}", requests);
 
