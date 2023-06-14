@@ -40,11 +40,10 @@ dependencies = [
 
 [[package]]
 name = "animeapi"
-version = "0.1.23"
+version = "0.1.24"
 dependencies = [
  "anyhow",
- "http-body-util",
- "hyper 1.0.0-rc.3",
+ "hyper",
  "scraper",
  "serde",
  "serde_json",
@@ -244,7 +243,7 @@ dependencies = [
  "futures-core",
  "futures-util",
  "http",
- "hyper 0.14.26",
+ "hyper",
  "hyper-rustls",
  "mime",
  "serde",
@@ -480,29 +479,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "http-body"
-version = "1.0.0-rc.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "951dfc2e32ac02d67c90c0d65bd27009a635dc9b381a2cc7d284ab01e3a0150d"
-dependencies = [
- "bytes",
- "http",
-]
-
-[[package]]
-name = "http-body-util"
-version = "0.1.0-rc.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "92445bc9cc14bfa0a3ce56817dc3b5bcc227a168781a356b702410789cec0d10"
-dependencies = [
- "bytes",
- "futures-util",
- "http",
- "http-body 1.0.0-rc.2",
- "pin-project-lite",
-]
-
-[[package]]
 name = "httparse"
 version = "1.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -524,8 +500,9 @@ dependencies = [
  "futures-channel",
  "futures-core",
  "futures-util",
+ "h2",
  "http",
- "http-body 0.4.5",
+ "http-body",
  "httparse",
  "httpdate",
  "itoa",
@@ -538,35 +515,13 @@ dependencies = [
 ]
 
 [[package]]
-name = "hyper"
-version = "1.0.0-rc.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7b75264b2003a3913f118d35c586e535293b3e22e41f074930762929d071e092"
-dependencies = [
- "bytes",
- "futures-channel",
- "futures-core",
- "futures-util",
- "h2",
- "http",
- "http-body 1.0.0-rc.2",
- "httparse",
- "httpdate",
- "itoa",
- "pin-project-lite",
- "tokio",
- "tracing",
- "want",
-]
-
-[[package]]
 name = "hyper-rustls"
 version = "0.23.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1788965e61b367cd03a62950836d5cd41560c3577d90e40e0819373194d1661c"
 dependencies = [
  "http",
- "hyper 0.14.26",
+ "hyper",
  "log",
  "rustls",
  "rustls-native-certs",

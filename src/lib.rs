@@ -1,11 +1,10 @@
 use anyhow::{Error as AHError, Ok as AHOk, Result as AHResult};
-use serde::ser::StdError;
+use hyper::Client;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::fmt;
-use std::process::Output;
-use thirtyfour::common::capabilities;
-use thirtyfour::{prelude::*, FirefoxCapabilities};
+use thirtyfour::prelude::*;
+use tokio::{net::TcpStream, spawn};
 
 pub async fn get_driver() -> AHResult<WebDriver> {
     let mut capabilities = DesiredCapabilities::firefox();
@@ -15,7 +14,15 @@ pub async fn get_driver() -> AHResult<WebDriver> {
 }
 
 pub async fn start_geckodriver() -> AHResult<()> {
-    let f = tokio::spawn(async move {
+    let sender = Client::new();
+
+    let url = "http://127.0.0.1:4444/status".parse::<hyper::Uri>()?;
+
+    let res = sender.get(url).await?.status();
+
+    println!("{}", res);
+
+    let f = spawn(async move {
         let output = std::process::Command::new("/Users/giulio/Desktop/geckodriver").output();
 
         if output.is_err() {
