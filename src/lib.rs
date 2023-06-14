@@ -15,7 +15,7 @@ pub async fn get_driver(headless: bool) -> AHResult<WebDriver> {
     if headless {
         capabilities.add_firefox_arg("-headless")?;
     }
-    let driver = WebDriver::new("http://127.0.0.1:4444", capabilities).await?;
+    let driver = WebDriver::new("http://127.0.0.1:4444/session", capabilities).await?;
     Ok(driver)
 }
 
@@ -126,8 +126,6 @@ pub mod animeunity {
 
     pub async fn get_token(headless: bool) -> AHResult<String> {
         let _ = crate::start_geckodriver().await;
-
-        tokio::time::sleep(tokio::time::Duration::from_secs(20)).await;
 
         let driver = crate::get_driver(headless).await?;
 
