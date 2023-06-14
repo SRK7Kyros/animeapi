@@ -26,7 +26,7 @@ pub async fn start_geckodriver() -> AHResult<()> {
     let res = match sender.get(url).await {
         Ok(e) => e.status(),
         Err(e) => {
-            println!("{}", e.to_string())
+            println!("{}", e.to_string());
             StatusCode::default()
         }
     };
