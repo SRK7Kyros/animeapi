@@ -16,7 +16,6 @@ pub async fn get_driver() -> AHResult<WebDriver> {
 
 pub async fn start_geckodriver() -> AHResult<()> {
     let f = tokio::spawn(async move {
-        println!("got here2");
         let output = std::process::Command::new("/Users/giulio/Desktop/geckodriver").output()?;
 
         let stdout = String::from_utf8(output.stdout)?;
@@ -121,12 +120,10 @@ pub mod animeunity {
 
     pub async fn get_token() -> AHResult<String> {
         let _ = crate::start_geckodriver().await;
-        println!("got here");
 
         tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
 
         let driver = crate::get_driver().await?;
-        println!("got here");
 
         driver
             .goto("https://www.animeunity.tv/anime/1469-naruto")
