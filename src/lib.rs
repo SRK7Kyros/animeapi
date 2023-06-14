@@ -131,7 +131,14 @@ pub mod animeunity {
 
         let requests = serde_json::to_string_pretty(requests.json())?;
 
-        let requests = requests.split("token").last().unwrap().to_string();
+        let requests = requests
+            .split("token=")
+            .last()
+            .unwrap()
+            .split("&expires")
+            .next()
+            .unwrap()
+            .to_string();
 
         driver.quit().await?;
         server.kill().await?;
