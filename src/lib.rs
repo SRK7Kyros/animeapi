@@ -1,4 +1,4 @@
-use anyhow::{Ok as AHOk, Result as AHResult};
+use anyhow::{Error as AHError, Ok as AHOk, Result as AHResult};
 use serde::ser::StdError;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
@@ -16,7 +16,16 @@ pub async fn get_driver() -> AHResult<WebDriver> {
 
 pub async fn start_geckodriver() -> AHResult<()> {
     tokio::spawn(async move {
-        std::process::Command::new("/Users/giulio/Desktop/geckodriver").output()
+        let output = std::process::Command::new("/Users/giulio/Desktop/geckodriver").output()?;
+        let stdout = String::from_utf8(output.stdout)?;
+        let stderr = String::from_utf8(output.stderr)?;
+
+        if stderr.contains("error") {
+            println!("{stderr}");
+        }
+        println!("{stdout}");
+
+        Ok::<(), AHError>(())
     });
     Ok(())
 }
