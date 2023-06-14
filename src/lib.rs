@@ -109,7 +109,7 @@ pub mod animeunity {
 
     const LINK: &str = "https://www.animeunity.tv/";
 
-    pub async fn search(term: String) -> AHResult<String> {
+    pub async fn search(term: &str) -> AHResult<String> {
         let sender = Client::new();
 
         let body = json!({ "title": term }).to_string();
