@@ -10,9 +10,11 @@ use tokio::{
     spawn,
 };
 
-pub async fn get_driver() -> AHResult<WebDriver> {
+pub async fn get_driver(headless: bool) -> AHResult<WebDriver> {
     let mut capabilities = DesiredCapabilities::firefox();
-    capabilities.add_firefox_arg("-headless")?;
+    if headless {
+        capabilities.add_firefox_arg("-headless")?;
+    }
     let driver = WebDriver::new("http://127.0.0.1:4444", capabilities).await?;
     Ok(driver)
 }
@@ -39,7 +41,7 @@ pub async fn stop_geckodriver(driver: Option<WebDriver>) -> AHResult<()> {
     let driver = match driver {
         Some(e) => e,
         None => {
-            let driver = get_driver().await?;
+            let driver = get_driver(true).await?;
             driver
         }
     };
@@ -122,12 +124,12 @@ pub mod animeunity {
         Ok(output)
     }
 
-    pub async fn get_token() -> AHResult<String> {
+    pub async fn get_token(headless: bool) -> AHResult<String> {
         let _ = crate::start_geckodriver().await;
 
         tokio::time::sleep(tokio::time::Duration::from_secs(20)).await;
 
-        let driver = crate::get_driver().await?;
+        let driver = crate::get_driver(headless).await?;
 
         driver
             .goto("https://www.animeunity.tv/anime/1469-naruto")
