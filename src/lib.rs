@@ -23,6 +23,8 @@ pub async fn start_geckodriver() -> AHResult<()> {
         spawn(async move {
             std::process::Command::new("/Users/giulio/Desktop/geckodriver").output();
         });
+    } else {
+        println!("Status: {}", res.unwrap().status())
     }
     Ok(())
 }
