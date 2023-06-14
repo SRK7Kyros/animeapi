@@ -7,8 +7,6 @@ use thirtyfour::prelude::*;
 use tokio::{net::TcpStream, spawn};
 
 pub async fn get_driver() -> AHResult<WebDriver> {
-    println!("get_driver ran");
-
     let mut capabilities = DesiredCapabilities::firefox();
     capabilities.add_firefox_arg("-headless")?;
     let driver = WebDriver::new("http://127.0.0.1:4444", capabilities).await?;
@@ -16,12 +14,9 @@ pub async fn get_driver() -> AHResult<WebDriver> {
 }
 
 pub async fn start_geckodriver() -> AHResult<()> {
-    println!("start_geckodriver ran");
     let sender = Client::new();
-    println!("got here");
 
     let url = "http://127.0.0.1:4444/status".parse::<hyper::Uri>()?;
-    println!("got here");
 
     let res = sender.get(url).await;
     if res.is_err() {
