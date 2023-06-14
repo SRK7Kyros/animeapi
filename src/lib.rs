@@ -119,12 +119,8 @@ pub mod animeunity {
         Ok(output)
     }
 
-    async fn start_geckodriver() -> AHResult<Output> {
-        Ok(std::process::Command::new("/Users/giulio/Desktop/geckodriver &        ").output()?)
-    }
-
     pub async fn get_token() -> AHResult<String> {
-        let _ = start_geckodriver().await;
+        let _ = crate::start_geckodriver().await;
         println!("got here");
 
         tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
