@@ -133,6 +133,7 @@ pub mod animeunity {
 
         let requests = serde_json::to_string_pretty(requests.json())?;
 
+        driver.quit().await?;
         Ok(requests)
     }
 }
