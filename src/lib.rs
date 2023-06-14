@@ -117,7 +117,9 @@ pub mod animeunity {
 
         let driver = crate::get_driver().await?;
 
-        thread::sleep(time::Duration::from_secs(5));
+        driver
+            .goto("https://www.animeunity.tv/anime/1469-naruto")
+            .await?;
 
         let requests = driver
             .execute("return window.performance.getEntries();", vec![])
