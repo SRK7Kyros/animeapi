@@ -101,17 +101,34 @@ impl AnimeStuff for Anime {
 pub mod animeunity {
     use crate::Anime;
     use anyhow::{Ok, Result as AHResult};
-    use core::time;
-    use hyper::{Request, Uri};
-    use std::{process::Output, thread, vec};
+    use hyper::{body::HttpBody, Body, Client, Method, Request};
+    use serde_json::json;
+    use std::{fmt::format, process::Output, thread, vec};
     use thirtyfour::prelude::*;
     use tokio::net::TcpStream;
 
     const LINK: &str = "https://www.animeunity.tv/";
 
-    pub async fn search(term: String) -> AHResult<Vec<Anime>> {
-        let output: Vec<Anime> = vec![];
-        Ok(output)
+    pub async fn search(term: String) -> AHResult<String> {
+        let sender = Client::new();
+
+        let body = json!({ "title": term }).to_string();
+
+        let request = Request::builder()
+            .method(Method::POST)
+            .uri("https://www.animeunity.tv/livesearch")
+            .header("content-type", "application/json")
+            .body(Body::from(body))?;
+
+        let mut response = sender.request(request).await?;
+        let mut stuff = "".to_string();
+        while let Some(chunk) = response.body_mut().data().await {
+            let piece = String::from_utf8(chunk?.to_vec())?;
+            stuff = format!("{stuff}{piece}");
+        }
+
+        //let output: Vec<Anime> = vec![];
+        Ok(stuff)
     }
 
     pub async fn get_token(headless: bool) -> AHResult<String> {
