@@ -102,6 +102,7 @@ pub mod animeunity {
     use crate::Anime;
     use anyhow::{Ok, Result as AHResult};
     use hyper::{body::HttpBody, Body, Client, Method, Request};
+    use hyper_tls::HttpsConnector;
     use serde_json::json;
     use std::{fmt::format, process::Output, thread, vec};
     use thirtyfour::prelude::*;
@@ -110,7 +111,8 @@ pub mod animeunity {
     const LINK: &str = "https://www.animeunity.tv/";
 
     pub async fn search(term: &str) -> AHResult<String> {
-        let sender = Client::new();
+        let https = HttpsConnector::new();
+        let sender = Client::builder().build::<_, hyper::Body>(https);
 
         let body = json!({ "title": term }).to_string();
 
