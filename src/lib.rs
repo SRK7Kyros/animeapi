@@ -15,7 +15,9 @@ pub async fn get_driver(headless: bool) -> AHResult<WebDriver> {
     if headless {
         capabilities.add_firefox_arg("-headless")?;
     }
-    let driver = WebDriver::new("http://127.0.0.1:4444/session", capabilities).await?;
+    let driver = WebDriver::new("http://127.0.0.1:4444/session", capabilities)
+        .await
+        .unwrap();
     Ok(driver)
 }
 
