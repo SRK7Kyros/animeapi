@@ -31,7 +31,8 @@ pub async fn start_geckodriver() -> AHResult<()> {
         });
     } else {
         while let Some(chunk) = res.as_mut().unwrap().body_mut().data().await {
-            stdout().write_all(&chunk?).await?;
+            let robo = &chunk?.to_vec();
+            println!("{}", String::from_utf8(robo.to_owned())?);
         }
     }
     Ok(())
