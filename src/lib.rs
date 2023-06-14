@@ -18,13 +18,11 @@ pub async fn start_geckodriver() -> AHResult<()> {
     let f = tokio::spawn(async move {
         let output = std::process::Command::new("/Users/giulio/Desktop/geckodriver").output()?;
 
-        let stdout = String::from_utf8(output.stdout)?;
         let stderr = String::from_utf8(output.stderr)?;
 
         if stderr.contains("error") {
             println!("{stderr}");
         }
-        println!("{stdout}");
 
         Ok::<(), AHError>(())
     });
