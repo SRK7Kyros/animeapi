@@ -1,8 +1,27 @@
 use anyhow::{Ok as AHOk, Result as AHResult};
+use fantoccini::{Client, ClientBuilder};
 use serde::ser::StdError;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::fmt;
+
+pub async fn get_client() -> AHResult<Client> {
+    let mut client = ClientBuilder::native();
+    let client = client
+        .capabilities(
+            json!({
+                "moz:firefoxOptions": {
+                    "args":["-headless"]
+                }
+            })
+            .as_object()
+            .unwrap()
+            .to_owned(),
+        )
+        .connect("http://127.0.0.1:4444/")
+        .await?;
+    Ok(client)
+}
 
 #[derive(Clone, Deserialize, Serialize, fmt::Debug)]
 pub struct Anime {
