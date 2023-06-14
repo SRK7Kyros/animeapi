@@ -16,7 +16,13 @@ pub async fn get_driver() -> AHResult<WebDriver> {
 
 pub async fn start_geckodriver() -> AHResult<()> {
     let f = tokio::spawn(async move {
-        let output = std::process::Command::new("/Users/giulio/Desktop/geckodriver").output()?;
+        let output = std::process::Command::new("/Users/giulio/Desktop/geckodriver").output();
+
+        if output.is_err() {
+            return Ok(());
+        }
+
+        let output = output?;
 
         let stderr = String::from_utf8(output.stderr)?;
 
