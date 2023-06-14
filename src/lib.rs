@@ -122,9 +122,13 @@ pub mod animeunity {
     }
 
     pub async fn get_token() -> AHResult<String> {
+        println!("got here");
+
         let _ = start_geckodriver().await;
+        println!("got here");
 
         let driver = crate::get_driver().await?;
+        println!("got here");
 
         driver
             .goto("https://www.animeunity.tv/anime/1469-naruto")
