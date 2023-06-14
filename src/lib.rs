@@ -125,8 +125,6 @@ pub mod animeunity {
     }
 
     pub async fn get_token() -> AHResult<String> {
-        println!("got here");
-
         let _ = start_geckodriver().await;
         println!("got here");
 

@@ -40,7 +40,7 @@ dependencies = [
 
 [[package]]
 name = "animeapi"
-version = "0.1.16"
+version = "0.1.17"
 dependencies = [
  "anyhow",
  "http-body-util",
