@@ -15,7 +15,7 @@ pub async fn get_driver() -> AHResult<WebDriver> {
 }
 
 pub async fn start_geckodriver() -> AHResult<()> {
-    tokio::spawn(async move {
+    let f = tokio::spawn(async move {
         let output = std::process::Command::new("/Users/giulio/Desktop/geckodriver").output()?;
         println!("got here2");
 
