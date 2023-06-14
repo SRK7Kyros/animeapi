@@ -135,8 +135,6 @@ pub mod animeunity {
 
         let requests = serde_json::to_string_pretty(requests.json())?;
 
-        println!("{}", requests);
-
-        Ok("".to_string())
+        Ok(requests)
     }
 }
