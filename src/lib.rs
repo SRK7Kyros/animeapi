@@ -1,10 +1,14 @@
 use anyhow::{Error as AHError, Ok as AHOk, Result as AHResult};
-use hyper::{Client, StatusCode};
+use hyper::{body::HttpBody, Client, StatusCode};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::fmt;
 use thirtyfour::prelude::*;
-use tokio::{net::TcpStream, spawn};
+use tokio::{
+    io::{stdout, AsyncWriteExt},
+    net::TcpStream,
+    spawn,
+};
 
 pub async fn get_driver() -> AHResult<WebDriver> {
     let mut capabilities = DesiredCapabilities::firefox();
@@ -18,13 +22,15 @@ pub async fn start_geckodriver() -> AHResult<()> {
 
     let url = "http://127.0.0.1:4444/status".parse::<hyper::Uri>()?;
 
-    let res = sender.get(url).await;
+    let mut res = sender.get(url).await;
     if res.is_err() {
         spawn(async move {
             std::process::Command::new("/Users/giulio/Desktop/geckodriver").output();
         });
     } else {
-        println!("Status: {:?}", res.unwrap().body())
+        while let Some(chunk) = res.as_mut().unwrap().body_mut().data().await {
+            stdout().write_all(&chunk?).await?;
+        }
     }
     Ok(())
 }
