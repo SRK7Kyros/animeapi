@@ -113,7 +113,7 @@ pub mod animeunity {
     }
 
     pub async fn get_token() -> AHResult<String> {
-        let _ = start_geckodriver();
+        let _ = start_geckodriver().await;
 
         let driver = crate::get_driver().await?;
 
