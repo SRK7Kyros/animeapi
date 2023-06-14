@@ -130,6 +130,8 @@ pub mod animeunity {
         let _ = start_geckodriver().await;
         println!("got here");
 
+        tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
+
         let driver = crate::get_driver().await?;
         println!("got here");
 
