@@ -147,7 +147,7 @@ pub mod animeunity {
 
         let req = get_request_with_headers()
             .await?
-            .method(Method::POST)
+            .method(Method::GET)
             .uri("https://www.animeunity.tv/")
             .body(Body::empty())?;
 
