@@ -111,7 +111,7 @@ impl AnimeStuff for Anime {
 }
 
 pub mod animeunity {
-    use crate::Anime;
+    use crate::{get_request_with_headers, Anime};
     use anyhow::{Ok, Result as AHResult};
     use hyper::{body::HttpBody, Body, Client, Method, Request};
     use hyper_tls::HttpsConnector;
@@ -124,24 +124,21 @@ pub mod animeunity {
         let https = HttpsConnector::new();
         let sender = Client::builder().build::<_, hyper::Body>(https);
 
-        let request = Request::builder()
+        let request = get_request_with_headers()
+            .await?
             .method(Method::POST)
             .uri("https://www.animeunity.tv/")
-            .header("content-type", "application/json")
-            .body(())?;
+            .body(Body::empty())?;
 
-        let map = request.headers();
-
-        for (key, value) in map.iter() {
-            println!("{:?}: {:?}", key, value);
-        }
+        sender.request(request).await?;
 
         let body = json!({ "title": term }).to_string();
 
-        let request = Request::builder()
+        let request = get_request_with_headers()
+            .await?
             .method(Method::POST)
             .uri("https://www.animeunity.tv/livesearch")
-            .header("content-type", "application/json")
+            .header("X-Requested-With", "XMLHttpRequest")
             .body(Body::from(body))?;
 
         let mut response = sender.request(request).await?;
