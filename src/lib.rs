@@ -81,7 +81,6 @@ pub async fn get_response_body(response: &mut Response<Body>) -> AHResult<String
 
     while let Some(chunk) = response.body_mut().data().await {
         let bytes = &chunk?;
-        println!("{:?}", std::str::from_utf8(&bytes)?);
         body.push_str(std::str::from_utf8(&bytes)?);
     }
     Ok(body)
