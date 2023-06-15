@@ -177,7 +177,6 @@ pub mod animeunity {
 
         let headers = get_response_headers(&mut res).await?;
         let cookie = &headers["set-cookie"].to_string();
-        println!("{cookie}");
 
         let body = json!({ "title": term }).to_string();
 
@@ -187,6 +186,7 @@ pub mod animeunity {
             .uri("https://www.animeunity.tv/livesearch")
             .header("X-Requested-With", "XMLHttpRequest")
             .header("X-CSRF-TOKEN", csrf_token)
+            .header("Cookie", cookie)
             .body(Body::from(body))?;
 
         let mut res = sender.request(req).await?;
