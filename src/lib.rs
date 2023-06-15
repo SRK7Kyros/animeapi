@@ -56,10 +56,9 @@ pub async fn get_request_with_headers() -> AHResult<Builder> {
     let request = Request::builder()
         .header("Content-Type", "application/json;charset=utf-8")
         .header("Accept", "*/*")
-        .header("Accept-Encoding", "gzip, deflate, br")
+        // .header("Accept-Encoding", "gzip, deflate, br")
         .header("Connection", "keep-alive")
-        // .header("User-Agent", "PostmanRuntime/7.32.2")
-        ;
+        .header("User-Agent", "PostmanRuntime/7.32.2");
 
     let output = request;
     Ok(output)
