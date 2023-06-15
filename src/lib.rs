@@ -77,13 +77,13 @@ pub async fn get_response_headers(
 }
 
 pub async fn get_response_body(response: &mut Response<Body>) -> AHResult<String> {
-    let mut stuff = "".to_string();
+    let mut body = "".to_string();
 
     while let Some(chunk) = response.body_mut().data().await {
         let bytes = &chunk?.to_vec();
-        stuff.push_str(std::str::from_utf8(&bytes)?);
+        body.push_str(std::str::from_utf8(&bytes)?);
     }
-    Ok(stuff)
+    Ok(body)
 }
 
 pub async fn get_request_with_headers() -> AHResult<Builder> {
@@ -197,19 +197,12 @@ pub mod animeunity {
             .uri("https://www.animeunity.tv/")
             .body(Body::empty())?;
 
-        // let mut req1_headers = get_request_headers(&mut req1, Some("req1")).await?;
-
         let mut res1 = sender.request(req1).await?;
 
         let body = get_response_body(&mut res1).await?;
         let csrf_token = get_csrf_token(body).await?;
 
         let res1_headers = get_response_headers(&mut res1, Some("res1")).await?;
-
-        // req1_headers
-        //     .as_object_mut()
-        //     .unwrap()
-        //     .append(res1_headers.as_object_mut().unwrap());
 
         let cookie = res1_headers["res1"]["set-cookie"].as_str().unwrap();
 
@@ -225,20 +218,8 @@ pub mod animeunity {
             .header("Host", "www.animeunity.tv")
             .body(Body::from(body))?;
 
-        // let mut req2_headers = get_request_headers(&mut req2, Some("req2")).await?;
-        // req1_headers
-        //     .as_object_mut()
-        //     .unwrap()
-        //     .append(req2_headers.as_object_mut().unwrap());
-
         let mut res2 = sender.request(req2).await?;
         let body = get_response_body(&mut res2).await?;
-
-        // let mut res2_headers = get_response_headers(&mut res2, Some("risposta 2")).await?;
-        // req2_headers
-        //     .as_object_mut()
-        //     .unwrap()
-        //     .append(res2_headers.as_object_mut().unwrap());
 
         let output: Vec<Anime> = vec![];
         Ok(body)
