@@ -1,5 +1,5 @@
 use anyhow::{Error as AHError, Ok as AHOk, Result as AHResult};
-use hyper::{body::HttpBody, Client, StatusCode};
+use hyper::{body::HttpBody, http::request::Builder, Client, Request, StatusCode};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::fmt;
@@ -10,6 +10,18 @@ use tokio::{
     process::Child,
     spawn,
 };
+
+pub async fn get_request_with_headers() -> AHResult<Builder> {
+    let request = Request::builder()
+        // .header("content-type", "application/json")
+        // .header("accept", "*/*")
+        // .header("accept-encoding", "gzip, deflate, br")
+        // .header("connection", "keep-alive")
+        ;
+
+    let output = request;
+    Ok(output)
+}
 
 pub async fn get_driver(headless: bool) -> AHResult<WebDriver> {
     let mut capabilities = DesiredCapabilities::firefox();
