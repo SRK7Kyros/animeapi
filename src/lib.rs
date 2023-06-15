@@ -1,5 +1,6 @@
 use anyhow::{Error as AHError, Ok as AHOk, Result as AHResult};
 use hyper::{body::HttpBody, http::request::Builder, Body, Request, Response};
+use scraper::{Html, Selector};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::fmt;
@@ -11,7 +12,18 @@ use tokio::{
     spawn,
 };
 
-use scraper::{Html, Selector};
+pub async fn merge(a: &mut Value, b: &Value) {
+    match (a, b) {
+        (&mut Value::Object(ref mut a), &Value::Object(ref b)) => {
+            for (k, v) in b {
+                merge(a.entry(k.clone()).or_insert(Value::Null), v);
+            }
+        }
+        (a, b) => {
+            *a = b.clone();
+        }
+    }
+}
 
 pub async fn get_csrf_token(html: String) -> AHResult<String> {
     let html = Html::parse_document(html.as_str());
@@ -27,14 +39,53 @@ pub async fn get_csrf_token(html: String) -> AHResult<String> {
     Ok(csrf_token.to_string())
 }
 
-pub async fn get_response_headers(response: &mut Response<Body>) -> AHResult<Value> {
+pub async fn get_request_headers(
+    request: &mut Request<Body>,
+    name: Option<&str>,
+) -> AHResult<Value> {
+    let mut headers = json!({});
+    let headers = headers.as_object_mut().unwrap();
+    for (key, value) in request.headers().iter() {
+        let value = Value::String(value.to_str().unwrap().to_string());
+        headers.insert(key.to_string(), value);
+    }
+    let output = match name {
+        Some(e) => {
+            let output = json!({
+                e: Value::Object(headers.to_owned())
+            });
+            output
+        }
+        None => {
+            let output: Value = Value::Object(headers.to_owned());
+            output
+        }
+    };
+    Ok(output)
+}
+
+pub async fn get_response_headers(
+    response: &mut Response<Body>,
+    name: Option<&str>,
+) -> AHResult<Value> {
     let mut headers = json!({});
     let headers = headers.as_object_mut().unwrap();
     for (key, value) in response.headers().iter() {
         let value = Value::String(value.to_str().unwrap().to_string());
         headers.insert(key.to_string(), value);
     }
-    let output = Value::Object(headers.to_owned());
+    let output = match name {
+        Some(e) => {
+            let output = json!({
+                e: Value::Object(headers.to_owned())
+            });
+            output
+        }
+        None => {
+            let output: Value = Value::Object(headers.to_owned());
+            output
+        }
+    };
     Ok(output)
 }
 
@@ -136,7 +187,8 @@ impl AnimeStuff for Anime {
 
 pub mod animeunity {
     use crate::{
-        get_csrf_token, get_request_with_headers, get_response_body, get_response_headers, Anime,
+        get_csrf_token, get_request_headers, get_request_with_headers, get_response_body,
+        get_response_headers, merge, Anime,
     };
     use anyhow::{Ok, Result as AHResult};
     use hyper::{body::HttpBody, Body, Client, Method, Request};
@@ -152,23 +204,25 @@ pub mod animeunity {
         let https = HttpsConnector::new();
         let sender = Client::builder().build::<_, hyper::Body>(https);
 
-        let req = get_request_with_headers()
+        let mut req = get_request_with_headers()
             .await?
             .method(Method::GET)
             .uri("https://www.animeunity.tv/")
             .body(Body::empty())?;
+
+        let mut richiesta1_headers = get_request_headers(&mut req, Some("richiesta 1")).await?;
 
         let mut res = sender.request(req).await?;
 
         let body = get_response_body(&mut res).await?;
         let csrf_token = get_csrf_token(body).await?;
 
-        let headers = get_response_headers(&mut res).await?;
-        let cookie = &headers["set-cookie"].to_string();
+        let risposta1_headers = get_response_headers(&mut res, Some("risposta 1")).await?;
+        let cookie = &risposta1_headers["set-cookie"].to_string();
 
         let body = json!({ "title": term }).to_string();
 
-        let req = get_request_with_headers()
+        let mut req = get_request_with_headers()
             .await?
             .method(Method::POST)
             .uri("https://www.animeunity.tv/livesearch")
@@ -178,13 +232,19 @@ pub mod animeunity {
             .header("Host", "www.animeunity.tv")
             .body(Body::from(body))?;
 
+        let richiesta2_headers = get_request_headers(&mut req, Some("richiesta 2")).await?;
+
         let mut res = sender.request(req).await?;
         let body = get_response_body(&mut res).await?;
 
-        let headers = get_response_headers(&mut res).await?;
+        let risposta2_headers = get_response_headers(&mut res, Some("risposta 2")).await?;
+
+        merge(&mut richiesta1_headers, &risposta1_headers).await;
+        merge(&mut richiesta1_headers, &richiesta2_headers).await;
+        merge(&mut richiesta1_headers, &risposta2_headers).await;
 
         let output: Vec<Anime> = vec![];
-        Ok((body, Value::default()))
+        Ok((body, richiesta1_headers))
     }
 
     pub async fn get_token(headless: bool) -> AHResult<String> {
