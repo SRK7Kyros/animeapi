@@ -48,6 +48,9 @@ pub async fn get_response_body(response: &mut Response<Body>) -> AHResult<String
         }
     }
     println!("{stuff}");
+    println!(" ");
+    println!(" ");
+    println!(" ");
     Ok(stuff)
 }
 
