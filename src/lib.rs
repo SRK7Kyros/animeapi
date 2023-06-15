@@ -211,7 +211,7 @@ pub mod animeunity {
             .unwrap()
             .append(risposta1_headers.as_object_mut().unwrap());
 
-        let cookie = &risposta1_headers["set-cookie"].to_string();
+        let cookie = &risposta1_headers["risposta 1"]["set-cookie"].to_string();
 
         let body = json!({ "title": term }).to_string();
 
