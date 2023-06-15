@@ -1,5 +1,5 @@
 use anyhow::{Error as AHError, Ok as AHOk, Result as AHResult};
-use hyper::{body::HttpBody, http::request::Builder, Client, Request, StatusCode};
+use hyper::{body::HttpBody, http::request::Builder, Body, Request, Response};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::fmt;
@@ -10,6 +10,26 @@ use tokio::{
     process::Child,
     spawn,
 };
+
+pub async fn get_response_headers(response: &mut Response<Body>) -> AHResult<Value> {
+    let mut headers = Value::default();
+    let headers = headers.as_object_mut().unwrap();
+    for (key, value) in response.headers().iter() {
+        let value = Value::String(value.to_str().unwrap().to_string());
+        headers.insert(key.to_string(), value);
+    }
+    let output = Value::Object(headers.to_owned());
+    Ok(output)
+}
+
+pub async fn get_response_body(response: &mut Response<Body>) -> AHResult<String> {
+    let mut stuff = "".to_string();
+    while let Some(chunk) = response.body_mut().data().await {
+        let piece = String::from_utf8(chunk?.to_vec())?;
+        stuff = format!("{stuff}{piece}");
+    }
+    Ok(stuff)
+}
 
 pub async fn get_request_with_headers() -> AHResult<Builder> {
     let request = Request::builder()
@@ -111,16 +131,17 @@ impl AnimeStuff for Anime {
 }
 
 pub mod animeunity {
-    use crate::{get_request_with_headers, Anime};
+    use crate::{get_request_with_headers, get_response_body, get_response_headers, Anime};
     use anyhow::{Ok, Result as AHResult};
     use hyper::{body::HttpBody, Body, Client, Method, Request};
     use hyper_tls::HttpsConnector;
     use serde_json::json;
+    use serde_json::{self, Value};
     use std::{fmt::format, process::Output, thread, vec};
     use thirtyfour::prelude::*;
     use tokio::net::TcpStream;
 
-    pub async fn search(term: &str) -> AHResult<String> {
+    pub async fn search(term: &str) -> AHResult<(std::string::String, Value)> {
         let https = HttpsConnector::new();
         let sender = Client::builder().build::<_, hyper::Body>(https);
 
@@ -131,11 +152,9 @@ pub mod animeunity {
             .body(Body::empty())?;
 
         let mut res = sender.request(req).await?;
-        let mut stuff = "".to_string();
-        while let Some(chunk) = res.body_mut().data().await {
-            let piece = String::from_utf8(chunk?.to_vec())?;
-            stuff = format!("{stuff}{piece}");
-        }
+        let body = get_response_body(&mut res).await?;
+
+        let headers = get_response_headers(&mut res).await?;
 
         // let body = json!({ "title": term }).to_string();
 
@@ -154,7 +173,7 @@ pub mod animeunity {
         // }
 
         //let output: Vec<Anime> = vec![];
-        Ok(stuff)
+        Ok((body, headers))
     }
 
     pub async fn get_token(headless: bool) -> AHResult<String> {
