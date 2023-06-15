@@ -40,14 +40,16 @@ pub async fn get_response_headers(response: &mut Response<Body>) -> AHResult<Val
 
 pub async fn get_response_body(response: &mut Response<Body>) -> AHResult<String> {
     let mut stuff = "".to_string();
+
+    while let Some(chunk) = response.body_mut().data().await {
+        stdout().write_all(&chunk?).await?;
+    }
+
     while let Some(chunk) = response.body_mut().data().await {
         let robo = chunk?;
         let piece = match String::from_utf8(robo.clone().to_vec()) {
             Ok(e) => e,
             Err(e) => {
-                for char in robo.clone().to_vec() {
-                    println!("{:b}", char)
-                }
                 return Err(AHError::new(e));
             }
         };
