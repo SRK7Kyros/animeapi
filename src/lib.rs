@@ -12,7 +12,7 @@ use tokio::{
 };
 
 pub async fn get_response_headers(response: &mut Response<Body>) -> AHResult<Value> {
-    let mut headers = Value::default();
+    let mut headers = json!({});
     let headers = headers.as_object_mut().unwrap();
     for (key, value) in response.headers().iter() {
         let value = Value::String(value.to_str().unwrap().to_string());
