@@ -47,6 +47,7 @@ pub async fn get_response_body(response: &mut Response<Body>) -> AHResult<String
             stuff = format!("{stuff}{:b} ", byte);
         }
     }
+    println!("{stuff}");
     Ok(stuff)
 }
 
