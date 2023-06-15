@@ -187,38 +187,35 @@ pub mod animeunity {
     use thirtyfour::prelude::*;
     use tokio::net::TcpStream;
 
-    pub async fn search(term: &str) -> AHResult<(std::string::String, Value)> {
+    pub async fn search(term: &str) -> AHResult<String> {
         let https = HttpsConnector::new();
         let sender = Client::builder().build::<_, hyper::Body>(https);
 
-        let mut req = get_request_with_headers()
+        let req1 = get_request_with_headers()
             .await?
             .method(Method::GET)
             .uri("https://www.animeunity.tv/")
             .body(Body::empty())?;
 
-        let mut richiesta1_headers = get_request_headers(&mut req, Some("richiesta 1")).await?;
+        // let mut req1_headers = get_request_headers(&mut req1, Some("req1")).await?;
 
-        let mut res = sender.request(req).await?;
+        let mut res1 = sender.request(req1).await?;
 
-        let body = get_response_body(&mut res).await?;
+        let body = get_response_body(&mut res1).await?;
         let csrf_token = get_csrf_token(body).await?;
 
-        let mut risposta1_headers = get_response_headers(&mut res, Some("risposta 1")).await?;
+        let res1_headers = get_response_headers(&mut res1, Some("res1")).await?;
 
-        richiesta1_headers
-            .as_object_mut()
-            .unwrap()
-            .append(risposta1_headers.as_object_mut().unwrap());
+        // req1_headers
+        //     .as_object_mut()
+        //     .unwrap()
+        //     .append(res1_headers.as_object_mut().unwrap());
 
-        let raw = &richiesta1_headers["risposta 1"];
-        println!("{}", serde_json::to_string_pretty(raw)?);
-        let cookie = raw["set-cookie"].as_str().unwrap();
-        println!("{}", cookie);
+        let cookie = res1_headers["res1"]["set-cookie"].as_str().unwrap();
 
         let body = json!({ "title": term }).to_string();
 
-        let mut req = get_request_with_headers()
+        let req2 = get_request_with_headers()
             .await?
             .method(Method::POST)
             .uri("https://www.animeunity.tv/livesearch")
@@ -228,23 +225,23 @@ pub mod animeunity {
             .header("Host", "www.animeunity.tv")
             .body(Body::from(body))?;
 
-        let mut richiesta2_headers = get_request_headers(&mut req, Some("richiesta 2")).await?;
-        richiesta1_headers
-            .as_object_mut()
-            .unwrap()
-            .append(richiesta2_headers.as_object_mut().unwrap());
+        // let mut req2_headers = get_request_headers(&mut req2, Some("req2")).await?;
+        // req1_headers
+        //     .as_object_mut()
+        //     .unwrap()
+        //     .append(req2_headers.as_object_mut().unwrap());
 
-        let mut res = sender.request(req).await?;
-        let body = get_response_body(&mut res).await?;
+        let mut res2 = sender.request(req2).await?;
+        let body = get_response_body(&mut res2).await?;
 
-        let mut risposta2_headers = get_response_headers(&mut res, Some("risposta 2")).await?;
-        richiesta1_headers
-            .as_object_mut()
-            .unwrap()
-            .append(risposta2_headers.as_object_mut().unwrap());
+        // let mut res2_headers = get_response_headers(&mut res2, Some("risposta 2")).await?;
+        // req2_headers
+        //     .as_object_mut()
+        //     .unwrap()
+        //     .append(res2_headers.as_object_mut().unwrap());
 
         let output: Vec<Anime> = vec![];
-        Ok((body, richiesta1_headers))
+        Ok(body)
     }
 
     pub async fn get_token(headless: bool) -> AHResult<String> {
