@@ -171,11 +171,13 @@ pub mod animeunity {
             .body(Body::empty())?;
 
         let mut res = sender.request(req).await?;
-        let body = get_response_body(&mut res).await?;
 
+        let body = get_response_body(&mut res).await?;
         let csrf_token = get_csrf_token(body).await?;
 
         let headers = get_response_headers(&mut res).await?;
+        let cookie = &headers["set-cookie"].to_string();
+        println!("{cookie}");
 
         let body = json!({ "title": term }).to_string();
 
