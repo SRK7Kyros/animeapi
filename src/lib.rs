@@ -108,11 +108,21 @@ pub mod animeunity {
     use thirtyfour::prelude::*;
     use tokio::net::TcpStream;
 
-    const LINK: &str = "https://www.animeunity.tv/";
-
     pub async fn search(term: &str) -> AHResult<String> {
         let https = HttpsConnector::new();
         let sender = Client::builder().build::<_, hyper::Body>(https);
+
+        let request = Request::builder()
+            .method(Method::POST)
+            .uri("https://www.animeunity.tv/")
+            .header("content-type", "application/json")
+            .body(())?;
+
+        let map = request.headers();
+
+        for (key, value) in map.iter() {
+            println!("{:?}: {:?}", key, value);
+        }
 
         let body = json!({ "title": term }).to_string();
 
