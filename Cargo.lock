@@ -40,7 +40,7 @@ dependencies = [
 
 [[package]]
 name = "animeapi"
-version = "0.1.71"
+version = "0.1.72"
 dependencies = [
  "anyhow",
  "hyper",
