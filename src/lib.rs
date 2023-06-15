@@ -49,11 +49,11 @@ pub async fn get_response_body(response: &mut Response<Body>) -> AHResult<String
 
 pub async fn get_request_with_headers() -> AHResult<Builder> {
     let request = Request::builder()
-        // .header("content-type", "application/json")
-        // .header("accept", "*/*")
-        // .header("accept-encoding", "gzip, deflate, br")
-        // .header("connection", "keep-alive")
-        ;
+        .header("Content-Type", "application/json")
+        .header("Accept", "*/*")
+        .header("Accept-Encoding", "gzip, deflate, br")
+        .header("Connection", "keep-alive")
+        .header("User-Agent", "PostmanRuntime/7.32.2");
 
     let output = request;
     Ok(output)
@@ -187,6 +187,7 @@ pub mod animeunity {
             .header("X-Requested-With", "XMLHttpRequest")
             .header("X-CSRF-TOKEN", csrf_token)
             .header("Cookie", cookie)
+            .header("Host", "www.animeunity.tv")
             .body(Body::from(body))?;
 
         let mut res = sender.request(req).await?;
