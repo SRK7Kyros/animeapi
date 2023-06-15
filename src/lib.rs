@@ -218,6 +218,8 @@ pub mod animeunity {
         let csrf_token = get_csrf_token(body).await?;
 
         let risposta1_headers = get_response_headers(&mut res, Some("risposta 1")).await?;
+        merge(&mut richiesta1_headers, &risposta1_headers).await;
+
         let cookie = &risposta1_headers["set-cookie"].to_string();
 
         let body = json!({ "title": term }).to_string();
@@ -233,14 +235,12 @@ pub mod animeunity {
             .body(Body::from(body))?;
 
         let richiesta2_headers = get_request_headers(&mut req, Some("richiesta 2")).await?;
+        merge(&mut richiesta1_headers, &richiesta2_headers).await;
 
         let mut res = sender.request(req).await?;
         let body = get_response_body(&mut res).await?;
 
         let risposta2_headers = get_response_headers(&mut res, Some("risposta 2")).await?;
-
-        merge(&mut richiesta1_headers, &risposta1_headers).await;
-        merge(&mut richiesta1_headers, &richiesta2_headers).await;
         merge(&mut richiesta1_headers, &risposta2_headers).await;
 
         let output: Vec<Anime> = vec![];
