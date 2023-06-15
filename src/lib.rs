@@ -80,7 +80,8 @@ pub async fn get_response_body(response: &mut Response<Body>) -> AHResult<String
     let mut body = "".to_string();
 
     while let Some(chunk) = response.body_mut().data().await {
-        let bytes = &chunk?.to_vec();
+        let bytes = &chunk?;
+        println!("{:?}", std::str::from_utf8(&bytes)?);
         body.push_str(std::str::from_utf8(&bytes)?);
     }
     Ok(body)
@@ -175,7 +176,7 @@ impl AnimeStuff for Anime {
 pub mod animeunity {
     use crate::{
         get_csrf_token, get_request_headers, get_request_with_headers, get_response_body,
-        get_response_headers, Anime,
+        get_response_headers, Anime, AnimeStuff,
     };
     use anyhow::{Ok, Result as AHResult};
     use hyper::{body::HttpBody, Body, Client, Method, Request};
@@ -187,7 +188,7 @@ pub mod animeunity {
     use thirtyfour::prelude::*;
     use tokio::net::TcpStream;
 
-    pub async fn search(term: &str) -> AHResult<String> {
+    pub async fn search(term: &str) -> AHResult<Vec<Anime>> {
         let https = HttpsConnector::new();
         let sender = Client::builder().build::<_, hyper::Body>(https);
 
@@ -222,7 +223,12 @@ pub mod animeunity {
         let body = get_response_body(&mut res2).await?;
 
         let output: Vec<Anime> = vec![];
-        Ok(body)
+
+        let body_json = Value::from(body);
+        let records = body_json["records"].as_array().unwrap();
+        for entry in records {}
+
+        Ok(output)
     }
 
     pub async fn get_token(headless: bool) -> AHResult<String> {
