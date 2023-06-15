@@ -89,7 +89,7 @@ pub async fn stop_geckodriver(driver: Option<WebDriver>) -> AHResult<()> {
     Ok(())
 }
 
-#[derive(Clone, Deserialize, Serialize, fmt::Debug)]
+#[derive(Clone, Deserialize, Serialize, fmt::Debug, Default)]
 pub struct Anime {
     pub name: String,
     pub link: String,
@@ -97,19 +97,6 @@ pub struct Anime {
     pub total_episodes: usize,
     pub available_episodes: usize,
     pub image_path: String,
-}
-
-impl Default for Anime {
-    fn default() -> Anime {
-        Anime {
-            name: String::from(""),
-            link: String::from(""),
-            link_type: String::from(""),
-            total_episodes: 0,
-            available_episodes: 0,
-            image_path: String::from(""),
-        }
-    }
 }
 
 pub trait AnimeStuff {
@@ -173,10 +160,8 @@ pub mod animeunity {
 
         let mut res = sender.request(req).await?;
 
-        println!("got here");
         let body = get_response_body(&mut res).await?;
         let csrf_token = get_csrf_token(body).await?;
-        println!("got here");
 
         let headers = get_response_headers(&mut res).await?;
         let cookie = &headers["set-cookie"].to_string();
@@ -194,9 +179,7 @@ pub mod animeunity {
             .body(Body::from(body))?;
 
         let mut res = sender.request(req).await?;
-        println!("got here1");
         let body = get_response_body(&mut res).await?;
-        println!("got here1");
 
         let headers = get_response_headers(&mut res).await?;
 
