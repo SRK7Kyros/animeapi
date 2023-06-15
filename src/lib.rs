@@ -41,7 +41,14 @@ pub async fn get_response_headers(response: &mut Response<Body>) -> AHResult<Val
 pub async fn get_response_body(response: &mut Response<Body>) -> AHResult<String> {
     let mut stuff = "".to_string();
     while let Some(chunk) = response.body_mut().data().await {
-        let piece = String::from_utf8(chunk?.to_vec())?;
+        let robo = chunk?;
+        let piece = match String::from_utf8(robo.clone().to_vec()) {
+            Ok(e) => e,
+            Err(e) => {
+                println!("{:?}", robo.clone().to_vec());
+                return Err(AHError::new(e));
+            }
+        };
         stuff = format!("{stuff}{piece}");
     }
     Ok(stuff)
@@ -171,8 +178,8 @@ pub mod animeunity {
             .body(Body::empty())?;
 
         let mut res = sender.request(req).await?;
-        println!("got here");
 
+        println!("got here");
         let body = get_response_body(&mut res).await?;
         let csrf_token = get_csrf_token(body).await?;
         println!("got here");
