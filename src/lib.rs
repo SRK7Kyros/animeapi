@@ -213,7 +213,7 @@ pub mod animeunity {
 
         let raw = &richiesta1_headers["risposta 1"];
         println!("{}", serde_json::to_string_pretty(raw)?);
-        let robo = raw["set-cookie"].to_string();
+        let cookie = raw["set-cookie"].to_string();
 
         let body = json!({ "title": term }).to_string();
 
