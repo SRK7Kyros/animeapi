@@ -175,7 +175,7 @@ impl AnimeStuff for Anime {
 pub mod animeunity {
     use crate::{
         get_csrf_token, get_request_headers, get_request_with_headers, get_response_body,
-        get_response_headers, merge, Anime,
+        get_response_headers, Anime,
     };
     use anyhow::{Ok, Result as AHResult};
     use hyper::{body::HttpBody, Body, Client, Method, Request};
