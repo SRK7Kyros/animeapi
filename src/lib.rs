@@ -181,33 +181,33 @@ pub mod animeunity {
 
         println!("got here");
         let body = get_response_body(&mut res).await?;
-        let csrf_token = get_csrf_token(body).await?;
-        println!("got here");
+        // let csrf_token = get_csrf_token(body).await?;
+        // println!("got here");
 
-        let headers = get_response_headers(&mut res).await?;
-        let cookie = &headers["set-cookie"].to_string();
+        // let headers = get_response_headers(&mut res).await?;
+        // let cookie = &headers["set-cookie"].to_string();
 
-        let body = json!({ "title": term }).to_string();
+        // let body = json!({ "title": term }).to_string();
 
-        let req = get_request_with_headers()
-            .await?
-            .method(Method::POST)
-            .uri("https://www.animeunity.tv/livesearch")
-            .header("X-Requested-With", "XMLHttpRequest")
-            .header("X-CSRF-TOKEN", csrf_token)
-            .header("Cookie", cookie)
-            .header("Host", "www.animeunity.tv")
-            .body(Body::from(body))?;
+        // let req = get_request_with_headers()
+        //     .await?
+        //     .method(Method::POST)
+        //     .uri("https://www.animeunity.tv/livesearch")
+        //     .header("X-Requested-With", "XMLHttpRequest")
+        //     .header("X-CSRF-TOKEN", csrf_token)
+        //     .header("Cookie", cookie)
+        //     .header("Host", "www.animeunity.tv")
+        //     .body(Body::from(body))?;
 
-        let mut res = sender.request(req).await?;
-        println!("got here1");
-        let body = get_response_body(&mut res).await?;
-        println!("got here1");
+        // let mut res = sender.request(req).await?;
+        // println!("got here1");
+        // let body = get_response_body(&mut res).await?;
+        // println!("got here1");
 
-        let headers = get_response_headers(&mut res).await?;
+        // let headers = get_response_headers(&mut res).await?;
 
-        let output: Vec<Anime> = vec![];
-        Ok((body, headers))
+        // let output: Vec<Anime> = vec![];
+        Ok((body, Value::default()))
     }
 
     pub async fn get_token(headless: bool) -> AHResult<String> {
