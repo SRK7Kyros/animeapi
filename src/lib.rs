@@ -124,29 +124,34 @@ pub mod animeunity {
         let https = HttpsConnector::new();
         let sender = Client::builder().build::<_, hyper::Body>(https);
 
-        let request = get_request_with_headers()
+        let req = get_request_with_headers()
             .await?
             .method(Method::POST)
             .uri("https://www.animeunity.tv/")
             .body(Body::empty())?;
 
-        sender.request(request).await?;
-
-        let body = json!({ "title": term }).to_string();
-
-        let request = get_request_with_headers()
-            .await?
-            .method(Method::POST)
-            .uri("https://www.animeunity.tv/livesearch")
-            .header("X-Requested-With", "XMLHttpRequest")
-            .body(Body::from(body))?;
-
-        let mut response = sender.request(request).await?;
+        let mut res = sender.request(req).await?;
         let mut stuff = "".to_string();
-        while let Some(chunk) = response.body_mut().data().await {
+        while let Some(chunk) = res.body_mut().data().await {
             let piece = String::from_utf8(chunk?.to_vec())?;
             stuff = format!("{stuff}{piece}");
         }
+
+        // let body = json!({ "title": term }).to_string();
+
+        // let req = get_request_with_headers()
+        //     .await?
+        //     .method(Method::POST)
+        //     .uri("https://www.animeunity.tv/livesearch")
+        //     .header("X-Requested-With", "XMLHttpRequest")
+        //     .body(Body::from(body))?;
+
+        // let mut res = sender.request(req).await?;
+        // let mut stuff = "".to_string();
+        // while let Some(chunk) = res.body_mut().data().await {
+        //     let piece = String::from_utf8(chunk?.to_vec())?;
+        //     stuff = format!("{stuff}{piece}");
+        // }
 
         //let output: Vec<Anime> = vec![];
         Ok(stuff)
