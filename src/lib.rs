@@ -45,7 +45,9 @@ pub async fn get_response_body(response: &mut Response<Body>) -> AHResult<String
         let piece = match String::from_utf8(robo.clone().to_vec()) {
             Ok(e) => e,
             Err(e) => {
-                println!("{:?}", robo.clone().to_vec());
+                for char in robo.clone().to_vec() {
+                    println!("{:b}", char)
+                }
                 return Err(AHError::new(e));
             }
         };
