@@ -12,19 +12,6 @@ use tokio::{
     spawn,
 };
 
-pub async fn merge(a: &mut Value, b: &Value) {
-    match (a, b) {
-        (&mut Value::Object(ref mut a), &Value::Object(ref b)) => {
-            for (k, v) in b {
-                merge(a.entry(k.clone()).or_insert(Value::Null), v);
-            }
-        }
-        (a, b) => {
-            *a = b.clone();
-        }
-    }
-}
-
 pub async fn get_csrf_token(html: String) -> AHResult<String> {
     let html = Html::parse_document(html.as_str());
     let selector = Selector::parse("meta[name='csrf-token']").unwrap();
@@ -217,8 +204,12 @@ pub mod animeunity {
         let body = get_response_body(&mut res).await?;
         let csrf_token = get_csrf_token(body).await?;
 
-        let risposta1_headers = get_response_headers(&mut res, Some("risposta 1")).await?;
-        merge(&mut richiesta1_headers, &risposta1_headers).await;
+        let mut risposta1_headers = get_response_headers(&mut res, Some("risposta 1")).await?;
+
+        richiesta1_headers
+            .as_object_mut()
+            .unwrap()
+            .append(risposta1_headers.as_object_mut().unwrap());
 
         let cookie = &risposta1_headers["set-cookie"].to_string();
 
@@ -234,14 +225,20 @@ pub mod animeunity {
             .header("Host", "www.animeunity.tv")
             .body(Body::from(body))?;
 
-        let richiesta2_headers = get_request_headers(&mut req, Some("richiesta 2")).await?;
-        merge(&mut richiesta1_headers, &richiesta2_headers).await;
+        let mut richiesta2_headers = get_request_headers(&mut req, Some("richiesta 2")).await?;
+        richiesta1_headers
+            .as_object_mut()
+            .unwrap()
+            .append(richiesta2_headers.as_object_mut().unwrap());
 
         let mut res = sender.request(req).await?;
         let body = get_response_body(&mut res).await?;
 
-        let risposta2_headers = get_response_headers(&mut res, Some("risposta 2")).await?;
-        merge(&mut richiesta1_headers, &risposta2_headers).await;
+        let mut risposta2_headers = get_response_headers(&mut res, Some("risposta 2")).await?;
+        richiesta1_headers
+            .as_object_mut()
+            .unwrap()
+            .append(risposta2_headers.as_object_mut().unwrap());
 
         let output: Vec<Anime> = vec![];
         Ok((body, richiesta1_headers))
