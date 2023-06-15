@@ -11,6 +11,22 @@ use tokio::{
     spawn,
 };
 
+use scraper::{Html, Selector};
+
+pub async fn get_csrf_token(html: String) -> AHResult<String> {
+    let html = Html::parse_document(html.as_str());
+    let selector = Selector::parse("meta[name='csrf-token']").unwrap();
+
+    let csrf_token = html
+        .select(&selector)
+        .next()
+        .unwrap()
+        .value()
+        .attr("content")
+        .unwrap();
+    Ok(csrf_token.to_string())
+}
+
 pub async fn get_response_headers(response: &mut Response<Body>) -> AHResult<Value> {
     let mut headers = json!({});
     let headers = headers.as_object_mut().unwrap();
@@ -131,7 +147,9 @@ impl AnimeStuff for Anime {
 }
 
 pub mod animeunity {
-    use crate::{get_request_with_headers, get_response_body, get_response_headers, Anime};
+    use crate::{
+        get_csrf_token, get_request_with_headers, get_response_body, get_response_headers, Anime,
+    };
     use anyhow::{Ok, Result as AHResult};
     use hyper::{body::HttpBody, Body, Client, Method, Request};
     use hyper_tls::HttpsConnector;
@@ -155,37 +173,26 @@ pub mod animeunity {
         let mut res = sender.request(req).await?;
         let body = get_response_body(&mut res).await?;
 
-        let html = Html::parse_document(body.as_str());
-        let selector = Selector::parse("meta[name='csrf-token']").unwrap();
-
-        let csrf_token = html
-            .select(&selector)
-            .next()
-            .unwrap()
-            .value()
-            .attr("content")
-            .unwrap();
+        let csrf_token = get_csrf_token(body).await?;
 
         let headers = get_response_headers(&mut res).await?;
 
-        // let body = json!({ "title": term }).to_string();
+        let body = json!({ "title": term }).to_string();
 
-        // let req = get_request_with_headers()
-        //     .await?
-        //     .method(Method::POST)
-        //     .uri("https://www.animeunity.tv/livesearch")
-        //     .header("X-Requested-With", "XMLHttpRequest")
-        //     .body(Body::from(body))?;
+        let req = get_request_with_headers()
+            .await?
+            .method(Method::POST)
+            .uri("https://www.animeunity.tv/livesearch")
+            .header("X-Requested-With", "XMLHttpRequest")
+            .header("X-CSRF-TOKEN", csrf_token)
+            .body(Body::from(body))?;
 
-        // let mut res = sender.request(req).await?;
-        // let mut stuff = "".to_string();
-        // while let Some(chunk) = res.body_mut().data().await {
-        //     let piece = String::from_utf8(chunk?.to_vec())?;
-        //     stuff = format!("{stuff}{piece}");
-        // }
+        let mut res = sender.request(req).await?;
+        let body = get_response_body(&mut res).await?;
+        let headers = get_response_headers(&mut res).await?;
 
-        //let output: Vec<Anime> = vec![];
-        Ok((csrf_token.to_string(), headers))
+        let output: Vec<Anime> = vec![];
+        Ok((body, headers))
     }
 
     pub async fn get_token(headless: bool) -> AHResult<String> {
