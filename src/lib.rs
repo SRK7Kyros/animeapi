@@ -135,6 +135,7 @@ pub mod animeunity {
     use anyhow::{Ok, Result as AHResult};
     use hyper::{body::HttpBody, Body, Client, Method, Request};
     use hyper_tls::HttpsConnector;
+    use scraper::{Html, Selector};
     use serde_json::json;
     use serde_json::{self, Value};
     use std::{fmt::format, process::Output, thread, vec};
@@ -153,6 +154,17 @@ pub mod animeunity {
 
         let mut res = sender.request(req).await?;
         let body = get_response_body(&mut res).await?;
+
+        let html = Html::parse_document(body.as_str());
+        let selector = Selector::parse("meta[name='csrf-token']").unwrap();
+
+        let csrf_token = html
+            .select(&selector)
+            .next()
+            .unwrap()
+            .value()
+            .attr("content")
+            .unwrap();
 
         let headers = get_response_headers(&mut res).await?;
 
@@ -173,7 +185,7 @@ pub mod animeunity {
         // }
 
         //let output: Vec<Anime> = vec![];
-        Ok((body, headers))
+        Ok((csrf_token.to_string(), headers))
     }
 
     pub async fn get_token(headless: bool) -> AHResult<String> {
