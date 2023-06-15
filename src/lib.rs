@@ -49,7 +49,7 @@ pub async fn get_response_body(response: &mut Response<Body>) -> AHResult<String
 
 pub async fn get_request_with_headers() -> AHResult<Builder> {
     let request = Request::builder()
-        .header("Content-Type", "application/json")
+        .header("Content-Type", "application/json;charset=utf-8")
         .header("Accept", "*/*")
         .header("Accept-Encoding", "gzip, deflate, br")
         .header("Connection", "keep-alive")
@@ -191,7 +191,10 @@ pub mod animeunity {
             .body(Body::from(body))?;
 
         let mut res = sender.request(req).await?;
+        println!("got here1");
         let body = get_response_body(&mut res).await?;
+        println!("got here1");
+
         let headers = get_response_headers(&mut res).await?;
 
         let output: Vec<Anime> = vec![];
