@@ -127,7 +127,6 @@ pub mod animeunity {
 
         let html_res = client.get("https://www.animeunity.tv").send().await?;
         let html_res_headers = html_res.headers().clone();
-        println!("{:#?}", html_res_headers);
 
         let mut search_req_headers = HeaderMap::new();
         let _ = html_res_headers
@@ -143,6 +142,7 @@ pub mod animeunity {
 
         search_req_headers.insert("X-Requested-With", "XMLHttpRequest".parse().unwrap());
         search_req_headers.insert("X-CSRF-TOKEN", csrf_token.parse().unwrap());
+        println!("{:#?}", search_req_headers);
 
         let search_req_body = json!({ "title": term }).to_string();
         let search_req = client
