@@ -133,6 +133,7 @@ pub mod animeunity {
             .get_all("set-cookie")
             .into_iter()
             .map(|cookie| {
+                println!("adding cookie");
                 let cookie = cookie.to_str().unwrap();
                 search_req_headers.insert(COOKIE, cookie.parse().unwrap());
             });
