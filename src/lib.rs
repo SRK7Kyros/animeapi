@@ -129,11 +129,15 @@ pub mod animeunity {
         let html_res_headers = html_res.headers().clone();
 
         let mut search_req_headers = HeaderMap::new();
-        let _ = html_res_headers.get_all("set-cookie").iter().map(|cookie| {
-            println!("adding cookie");
-            let cookie = cookie.to_str().unwrap();
-            search_req_headers.insert(COOKIE, cookie.parse().unwrap());
-        });
+        let mut html_res_cookies = html_res_headers.get_all("set-cookie").iter();
+        search_req_headers.insert(
+            COOKIE,
+            html_res_cookies.next().unwrap().to_str()?.parse().unwrap(),
+        );
+        search_req_headers.insert(
+            COOKIE,
+            html_res_cookies.next().unwrap().to_str()?.parse().unwrap(),
+        );
 
         let body = html_res.text().await?;
         let csrf_token = get_csrf_token(body).await?;
