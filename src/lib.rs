@@ -129,17 +129,20 @@ pub mod animeunity {
         let html_res_headers = html_res.headers().clone();
         println!("{:#?}", html_res_headers);
 
-        let cookie = html_res_headers
-            .get("set-cookie")
-            .ok_or(AHError::msg("On the first request no cookie was provided"))?
-            .to_str()?;
+        let mut search_req_headers = HeaderMap::new();
+        let _ = html_res_headers
+            .get_all("set-cookie")
+            .into_iter()
+            .map(|cookie| {
+                let cookie = cookie.to_str().unwrap();
+                search_req_headers.insert(COOKIE, cookie.parse().unwrap());
+            });
+
         let body = html_res.text().await?;
         let csrf_token = get_csrf_token(body).await?;
 
-        let mut search_req_headers = HeaderMap::new();
         search_req_headers.insert("X-Requested-With", "XMLHttpRequest".parse().unwrap());
         search_req_headers.insert("X-CSRF-TOKEN", csrf_token.parse().unwrap());
-        search_req_headers.insert(COOKIE, cookie.parse().unwrap());
 
         let search_req_body = json!({ "title": term }).to_string();
         let search_req = client
