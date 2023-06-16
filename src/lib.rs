@@ -127,6 +127,8 @@ pub mod animeunity {
 
         let html_res = client.get("https://www.animeunity.tv").send().await?;
         let html_res_headers = html_res.headers().clone();
+        println!("{:#?}", html_res_headers);
+
         let cookie = html_res_headers
             .get("set-cookie")
             .ok_or(AHError::msg("On the first request no cookie was provided"))?
@@ -145,7 +147,7 @@ pub mod animeunity {
             .body(search_req_body)
             .headers(search_req_headers);
 
-        println!("{:#?}", search_req);
+        // println!("{:#?}", search_req);
         let search_res = search_req.send().await?;
 
         let search_res_json = search_res.json().await?;
