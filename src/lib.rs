@@ -133,7 +133,6 @@ pub mod animeunity {
         let xsrf_token = html_res_cookies.next().unwrap().to_str()?;
         let animeunity_session = html_res_cookies.next().unwrap().to_str()?;
         let cookie = format!("{xsrf_token};{animeunity_session}");
-        println!("{}", cookie);
         search_req_headers.insert(COOKIE, cookie.parse().unwrap());
 
         let body = html_res.text().await?;
@@ -141,7 +140,6 @@ pub mod animeunity {
 
         search_req_headers.insert("X-Requested-With", "XMLHttpRequest".parse().unwrap());
         search_req_headers.insert("X-CSRF-TOKEN", csrf_token.parse().unwrap());
-        println!("{:#?}", search_req_headers);
 
         let search_req_body = json!({ "title": term }).to_string();
         let search_req = client
@@ -149,7 +147,7 @@ pub mod animeunity {
             .body(search_req_body)
             .headers(search_req_headers);
 
-        // println!("{:#?}", search_req);
+        println!("{:#?}", search_req);
         let search_res = search_req.send().await?;
 
         let search_res_json = search_res.json().await?;
