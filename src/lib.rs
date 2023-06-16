@@ -147,7 +147,7 @@ pub mod animeunity {
             .send()
             .await?;
 
-        let search_res_json: Value = from_str(search_res.text().await?.as_str())?;
+        let search_res_json = search_res.json().await?;
 
         let output: Vec<Anime> = vec![];
         Ok(search_res_json)
