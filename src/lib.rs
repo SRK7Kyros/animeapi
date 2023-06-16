@@ -114,7 +114,7 @@ impl AnimeStuff for Anime {
 pub mod animeunity {
     use crate::{get_client, get_csrf_token, Anime, AnimeStuff};
     use anyhow::{Error as AHError, Ok, Result as AHResult};
-    use reqwest::header::{HeaderMap, COOKIE};
+    use reqwest::header::{self, HeaderMap, COOKIE};
     use scraper::{Html, Selector};
     use serde_json::{self, Value};
     use serde_json::{from_str, json};
@@ -140,12 +140,13 @@ pub mod animeunity {
         search_req_headers.insert(COOKIE, cookie.parse().unwrap());
 
         let search_req_body = json!({ "title": term }).to_string();
-        let search_res = client
+        let search_req = client
             .post("https://www.animeunity.tv/livesearch")
             .body(search_req_body)
-            .headers(search_req_headers)
-            .send()
-            .await?;
+            .headers(search_req_headers);
+
+        println!("{:#?}", search_req);
+        let search_res = search_req.send().await?;
 
         let search_res_json = search_res.json().await?;
 
