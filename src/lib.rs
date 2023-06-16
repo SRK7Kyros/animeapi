@@ -1,5 +1,9 @@
 use anyhow::{Error as AHError, Ok as AHOk, Result as AHResult};
-use hyper::{body::HttpBody, http::request::Builder, Body, Request, Response};
+use reqwest::{
+    self,
+    header::{self, HeaderMap, HeaderValue},
+    Client,
+};
 use scraper::{Html, Selector};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
@@ -11,6 +15,13 @@ use tokio::{
     process::Child,
     spawn,
 };
+
+pub async fn get_client() -> AHResult<Client> {
+    let headers = HeaderMap::new();
+
+    let client = Client::builder().default_headers(headers).build()?;
+    Ok(client)
+}
 
 pub async fn get_csrf_token(html: String) -> AHResult<String> {
     let html = Html::parse_document(html.as_str());
@@ -24,78 +35,6 @@ pub async fn get_csrf_token(html: String) -> AHResult<String> {
         .attr("content")
         .unwrap();
     Ok(csrf_token.to_string())
-}
-
-pub async fn get_request_headers(
-    request: &mut Request<Body>,
-    name: Option<&str>,
-) -> AHResult<Value> {
-    let mut headers = json!({});
-    let headers = headers.as_object_mut().unwrap();
-    for (key, value) in request.headers().iter() {
-        let value = Value::String(value.to_str().unwrap().to_string());
-        headers.insert(key.to_string(), value);
-    }
-    let output = match name {
-        Some(e) => {
-            let output = json!({
-                e: Value::Object(headers.to_owned())
-            });
-            output
-        }
-        None => {
-            let output: Value = Value::Object(headers.to_owned());
-            output
-        }
-    };
-    Ok(output)
-}
-
-pub async fn get_response_headers(
-    response: &mut Response<Body>,
-    name: Option<&str>,
-) -> AHResult<Value> {
-    let mut headers = json!({});
-    let headers = headers.as_object_mut().unwrap();
-    for (key, value) in response.headers().iter() {
-        let value = Value::String(value.to_str().unwrap().to_string());
-        headers.insert(key.to_string(), value);
-    }
-    let output = match name {
-        Some(e) => {
-            let output = json!({
-                e: Value::Object(headers.to_owned())
-            });
-            output
-        }
-        None => {
-            let output: Value = Value::Object(headers.to_owned());
-            output
-        }
-    };
-    Ok(output)
-}
-
-pub async fn get_response_body(response: &mut Response<Body>) -> AHResult<String> {
-    let mut body = "".to_string();
-
-    while let Some(chunk) = response.body_mut().data().await {
-        let bytes = &chunk?;
-        body.push_str(std::str::from_utf8(&bytes)?);
-    }
-    Ok(body)
-}
-
-pub async fn get_request_with_headers() -> AHResult<Builder> {
-    let request = Request::builder()
-        .header("Content-Type", "application/json;charset=utf-8")
-        .header("Accept", "*/*")
-        // .header("Accept-Encoding", "gzip, deflate, br")
-        .header("Connection", "keep-alive")
-        .header("User-Agent", "PostmanRuntime/7.32.2");
-
-    let output = request;
-    Ok(output)
 }
 
 pub async fn get_driver(headless: bool) -> AHResult<WebDriver> {
@@ -173,62 +112,89 @@ impl AnimeStuff for Anime {
 }
 
 pub mod animeunity {
-    use crate::{
-        get_csrf_token, get_request_headers, get_request_with_headers, get_response_body,
-        get_response_headers, Anime, AnimeStuff,
-    };
-    use anyhow::{Ok, Result as AHResult};
-    use hyper::{body::HttpBody, Body, Client, Method, Request};
-    use hyper_tls::HttpsConnector;
+    use crate::{get_client, get_csrf_token, Anime, AnimeStuff};
+    use anyhow::{Error as AHError, Ok, Result as AHResult};
+    use reqwest::header::{HeaderMap, COOKIE};
     use scraper::{Html, Selector};
-    use serde_json::json;
     use serde_json::{self, Value};
+    use serde_json::{from_str, json};
     use std::{fmt::format, process::Output, thread, vec};
     use thirtyfour::prelude::*;
     use tokio::net::TcpStream;
 
-    pub async fn search(term: &str) -> AHResult<Vec<Anime>> {
-        let https = HttpsConnector::new();
-        let sender = Client::builder().build::<_, hyper::Body>(https);
+    pub async fn search2(term: &str) -> AHResult<Value> {
+        let client = get_client().await?;
 
-        let req1 = get_request_with_headers()
-            .await?
-            .method(Method::GET)
-            .uri("https://www.animeunity.tv/")
-            .body(Body::empty())?;
-
-        let mut res1 = sender.request(req1).await?;
-
-        let body = get_response_body(&mut res1).await?;
+        let html_res = client.get("https://www.animeunity.tv").send().await?;
+        let html_res_headers = html_res.headers().clone();
+        let cookie = html_res_headers
+            .get("set-cookie")
+            .ok_or(AHError::msg("On the first request no cookie was provided"))?
+            .to_str()?;
+        let body = html_res.text().await?;
         let csrf_token = get_csrf_token(body).await?;
 
-        let res1_headers = get_response_headers(&mut res1, Some("res1")).await?;
+        let mut search_req_headers = HeaderMap::new();
+        search_req_headers.insert("X-Requested-With", "XMLHttpRequest".parse().unwrap());
+        search_req_headers.insert("X-CSRF-TOKEN", csrf_token.parse().unwrap());
+        search_req_headers.insert(COOKIE, cookie.parse().unwrap());
 
-        let cookie = res1_headers["res1"]["set-cookie"].as_str().unwrap();
+        let search_req_body = json!({ "title": term }).to_string();
+        let search_res = client
+            .post("https://www.animeunity.tv/livesearch")
+            .body(search_req_body)
+            .headers(search_req_headers)
+            .send()
+            .await?;
 
-        let body = json!({ "title": term }).to_string();
-
-        let req2 = get_request_with_headers()
-            .await?
-            .method(Method::POST)
-            .uri("https://www.animeunity.tv/livesearch")
-            .header("X-Requested-With", "XMLHttpRequest")
-            .header("X-CSRF-TOKEN", csrf_token)
-            .header("Cookie", cookie)
-            .header("Host", "www.animeunity.tv")
-            .body(Body::from(body))?;
-
-        let mut res2 = sender.request(req2).await?;
-        let body = get_response_body(&mut res2).await?;
+        let search_res_json: Value = from_str(search_res.text().await?.as_str())?;
 
         let output: Vec<Anime> = vec![];
-
-        let body_json = Value::from(body);
-        let records = body_json["records"].as_array().unwrap();
-        for entry in records {}
-
-        Ok(output)
+        Ok(search_res_json)
     }
+
+    // // pub async fn search(term: &str) -> AHResult<Vec<Anime>> {
+    //     let https = HttpsConnector::new();
+    //     let sender = Client::builder().build::<_, hyper::Body>(https);
+
+    //     let req1 = get_request_with_headers()
+    //         .await?
+    //         .method(Method::GET)
+    //         .uri("https://www.animeunity.tv/")
+    //         .body(Body::empty())?;
+
+    //     let mut res1 = sender.request(req1).await?;
+
+    //     let body = get_response_body(&mut res1).await?;
+    //     let csrf_token = get_csrf_token(body).await?;
+
+    //     let res1_headers = get_response_headers(&mut res1, Some("res1")).await?;
+
+    //     let cookie = res1_headers["res1"]["set-cookie"].as_str().unwrap();
+
+    //     let body = json!({ "title": term }).to_string();
+
+    //     let req2 = get_request_with_headers()
+    //         .await?
+    //         .method(Method::POST)
+    //         .uri("https://www.animeunity.tv/livesearch")
+    //         .header("X-Requested-With", "XMLHttpRequest")
+    //         .header("X-CSRF-TOKEN", csrf_token)
+    //         .header("Cookie", cookie)
+    //         .header("Host", "www.animeunity.tv")
+    //         .body(Body::from(body))?;
+
+    //     let mut res2 = sender.request(req2).await?;
+    //     let body = get_response_body(&mut res2).await?;
+
+    //     let output: Vec<Anime> = vec![];
+
+    //     let body_json = Value::from(body);
+    //     let records = body_json["records"].as_array().unwrap();
+    //     for entry in records {}
+
+    //     Ok(output)
+    // }
 
     pub async fn get_token(headless: bool) -> AHResult<String> {
         let mut server = crate::start_geckodriver().await?;
