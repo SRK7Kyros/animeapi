@@ -133,6 +133,7 @@ pub mod animeunity {
     pub enum EntryType {
         TV,
         Movie,
+        OVA,
     }
 
     #[serde_as]
