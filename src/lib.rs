@@ -141,10 +141,7 @@ pub mod animeunity {
         search_req_headers.insert("X-Requested-With", "XMLHttpRequest".parse().unwrap());
         search_req_headers.insert("X-CSRF-TOKEN", csrf_token.parse().unwrap());
         search_req_headers.insert("Content-Type", "application/json".parse().unwrap());
-        search_req_headers.insert("Accept", "*/*".parse().unwrap());
-        search_req_headers.insert("Connection", "keep-alive".parse().unwrap());
         search_req_headers.insert("Host", "https://www.animeunity.tv/".parse().unwrap());
-        search_req_headers.insert("User-Agent", "PostmanRuntime/7.32.3".parse().unwrap());
 
         let search_req_body = json!({ "title": term }).to_string();
         let search_req = client
