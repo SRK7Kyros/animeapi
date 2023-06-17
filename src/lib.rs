@@ -146,13 +146,17 @@ pub mod animeunity {
         date: usize,
         #[serde(rename = "type")]
         entry_type: EntryType,
+        #[serde(rename(deserialize = "imageurl"))]
+        image_url: String,
+        slug: String,
+        #[serde_as(as = "DisplayFromStr")]
+        id: usize,
     }
 
     pub async fn search(term: &str) -> AHResult<Vec<SearchEntry>> {
         let client = get_client().await?;
 
         let html_res = client.get("https://www.animeunity.it").send().await?;
-        let now = Instant::now();
 
         let body = html_res.text().await?;
         let csrf_token = get_csrf_token(body).await?;
@@ -177,13 +181,9 @@ pub mod animeunity {
             .ok_or(AHError::msg("No records obtained"))?
             .to_owned();
 
-        let robo = serde_json::from_value::<Vec<SearchEntry>>(search_res_json)?;
+        let output = serde_json::from_value::<Vec<SearchEntry>>(search_res_json)?;
 
-        let elapsed = now.elapsed();
-        println!("Elapsed: {:.2?}", elapsed);
-
-        let output: Vec<Anime> = vec![];
-        Ok(robo)
+        Ok(output)
     }
 
     pub async fn get_token(headless: bool) -> AHResult<String> {
