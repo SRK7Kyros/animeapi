@@ -120,6 +120,7 @@ pub mod animeunity {
     use anyhow::{Error as AHError, Ok, Result as AHResult};
     use reqwest::header::{self, HeaderMap, COOKIE};
     use scraper::{Html, Selector};
+    use serde::{Deserialize, Serialize};
     use serde_json::{self, Value};
     use serde_json::{from_str, json};
     use std::time::Instant;
@@ -127,7 +128,22 @@ pub mod animeunity {
     use thirtyfour::prelude::*;
     use tokio::net::TcpStream;
 
-    pub async fn search(term: &str) -> AHResult<Value> {
+    #[derive(Clone, Serialize, Deserialize, Debug)]
+    pub enum EntryType {
+        TV,
+        Movie,
+    }
+
+    #[derive(Clone, Serialize, Deserialize, Debug)]
+    pub struct SearchEntry {
+        title: String,
+        episodes_count: usize,
+        date: usize,
+        #[serde(rename = "type")]
+        entry_type: EntryType,
+    }
+
+    pub async fn search(term: &str) -> AHResult<Vec<SearchEntry>> {
         let client = get_client().await?;
 
         let html_res = client.get("https://www.animeunity.it").send().await?;
@@ -149,12 +165,20 @@ pub mod animeunity {
 
         let search_res = search_req.send().await?;
 
-        let search_res_json = search_res.json().await?;
+        let search_res_json = search_res
+            .json::<Value>()
+            .await?
+            .get("records")
+            .ok_or(AHError::msg("No records obtained"))?
+            .to_owned();
+
+        let robo = serde_json::from_value::<Vec<SearchEntry>>(search_res_json)?;
+
         let elapsed = now.elapsed();
         println!("Elapsed: {:.2?}", elapsed);
 
         let output: Vec<Anime> = vec![];
-        Ok(search_res_json)
+        Ok(robo)
     }
 
     pub async fn get_token(headless: bool) -> AHResult<String> {
