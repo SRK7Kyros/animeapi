@@ -138,7 +138,7 @@ pub mod animeunity {
     #[serde_as]
     #[derive(Clone, Serialize, Deserialize, Debug)]
     pub struct SearchEntry {
-        #[serde(rename = "title-eng")]
+        #[serde(rename(deserialize = "title-eng"))]
         title: String,
         episodes_count: usize,
         #[serde_as(as = "DisplayFromStr")]
