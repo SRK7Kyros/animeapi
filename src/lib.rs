@@ -125,7 +125,7 @@ pub mod animeunity {
     pub async fn search2(term: &str) -> AHResult<Value> {
         let client = get_client().await?;
 
-        let html_res = client.get("https://www.animeunity.tv").send().await?;
+        let html_res = client.get("https://www.animeunity.it").send().await?;
         let html_res_headers = html_res.headers().clone();
 
         let mut search_req_headers = HeaderMap::new();
@@ -143,7 +143,7 @@ pub mod animeunity {
 
         let search_req_body = json!({ "title": term }).to_string();
         let search_req = client
-            .post("https://www.animeunity.tv/livesearch")
+            .post("https://www.animeunity.it/livesearch")
             .body(search_req_body)
             .headers(search_req_headers);
 
