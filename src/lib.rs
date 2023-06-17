@@ -149,7 +149,6 @@ pub mod animeunity {
         #[serde(rename(deserialize = "imageurl"))]
         image_url: String,
         slug: String,
-        #[serde_as(as = "DisplayFromStr")]
         id: usize,
     }
 
