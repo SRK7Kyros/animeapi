@@ -122,7 +122,7 @@ pub mod animeunity {
     use thirtyfour::prelude::*;
     use tokio::net::TcpStream;
 
-    pub async fn search2(term: &str) -> AHResult<Value> {
+    pub async fn search(term: &str) -> AHResult<Value> {
         let client = get_client().await?;
 
         let html_res = client.get("https://www.animeunity.it").send().await?;
@@ -155,49 +155,6 @@ pub mod animeunity {
         let output: Vec<Anime> = vec![];
         Ok(search_res_json)
     }
-
-    // // pub async fn search(term: &str) -> AHResult<Vec<Anime>> {
-    //     let https = HttpsConnector::new();
-    //     let sender = Client::builder().build::<_, hyper::Body>(https);
-
-    //     let req1 = get_request_with_headers()
-    //         .await?
-    //         .method(Method::GET)
-    //         .uri("https://www.animeunity.tv/")
-    //         .body(Body::empty())?;
-
-    //     let mut res1 = sender.request(req1).await?;
-
-    //     let body = get_response_body(&mut res1).await?;
-    //     let csrf_token = get_csrf_token(body).await?;
-
-    //     let res1_headers = get_response_headers(&mut res1, Some("res1")).await?;
-
-    //     let cookie = res1_headers["res1"]["set-cookie"].as_str().unwrap();
-
-    //     let body = json!({ "title": term }).to_string();
-
-    //     let req2 = get_request_with_headers()
-    //         .await?
-    //         .method(Method::POST)
-    //         .uri("https://www.animeunity.tv/livesearch")
-    //         .header("X-Requested-With", "XMLHttpRequest")
-    //         .header("X-CSRF-TOKEN", csrf_token)
-    //         .header("Cookie", cookie)
-    //         .header("Host", "www.animeunity.tv")
-    //         .body(Body::from(body))?;
-
-    //     let mut res2 = sender.request(req2).await?;
-    //     let body = get_response_body(&mut res2).await?;
-
-    //     let output: Vec<Anime> = vec![];
-
-    //     let body_json = Value::from(body);
-    //     let records = body_json["records"].as_array().unwrap();
-    //     for entry in records {}
-
-    //     Ok(output)
-    // }
 
     pub async fn get_token(headless: bool) -> AHResult<String> {
         let mut server = crate::start_geckodriver().await?;
