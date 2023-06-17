@@ -123,6 +123,7 @@ pub mod animeunity {
     use serde::{Deserialize, Serialize};
     use serde_json::{self, Value};
     use serde_json::{from_str, json};
+    use serde_with::{serde_as, DisplayFromStr};
     use std::time::Instant;
     use std::{fmt::format, process::Output, thread, vec};
     use thirtyfour::prelude::*;
@@ -134,10 +135,12 @@ pub mod animeunity {
         Movie,
     }
 
+    #[serde_as]
     #[derive(Clone, Serialize, Deserialize, Debug)]
     pub struct SearchEntry {
         #[serde(rename = "title-eng")]
         title: String,
+        #[serde_as(as = "DisplayFromStr")]
         episodes_count: usize,
         date: usize,
         #[serde(rename = "type")]
