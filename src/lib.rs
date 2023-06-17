@@ -147,7 +147,6 @@ pub mod animeunity {
             .body(search_req_body)
             .headers(search_req_headers);
 
-        println!("{:#?}", search_req);
         let search_res = search_req.send().await?;
 
         let search_res_json = search_res.json().await?;
