@@ -15,7 +15,20 @@ use tokio::{
     net::TcpStream,
     process::Child,
     spawn,
+    sync::Mutex,
 };
+
+pub async fn merge(a: &mut Value, b: &mut Value) -> AHResult<()> {
+    let a = a.as_object_mut().ok_or(AHError::msg(
+        "Could not convert the first Value to an object",
+    ))?;
+    let b = b.as_object_mut().ok_or(AHError::msg(
+        "Could not convert the second Value to an object",
+    ))?;
+    a.append(b);
+
+    Ok(())
+}
 
 pub async fn get_client() -> AHResult<Client> {
     let headers = HeaderMap::new();
