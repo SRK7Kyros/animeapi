@@ -1,6 +1,6 @@
 [package]
 name = "animeapi"
-version = "0.1.109"
+version = "0.1.110"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -13,4 +13,4 @@ serde_json = "1.0.96"
 tokio = { version = "1.28.2", features = ["full"] }
 thirtyfour = "0.31.0"
 reqwest = {version = "0.11.18", features = ["cookies", "json"]}
-serde_with = "3.0.0"
+serde-aux = "4.2.0"

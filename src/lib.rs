@@ -70,7 +70,7 @@ pub async fn stop_geckodriver(driver: Option<WebDriver>) -> AHResult<()> {
     Ok(())
 }
 
-#[derive(Clone, Deserialize, Serialize, fmt::Debug, Default)]
+#[derive(Clone, Deserialize, Serialize, Default)]
 pub struct Anime {
     pub name: String,
     pub link: String,
@@ -121,11 +121,11 @@ pub mod animeunity {
     use reqwest::header::{self, HeaderMap, COOKIE};
     use scraper::{Html, Selector};
     use serde::{Deserialize, Serialize};
+    use serde_aux::field_attributes::deserialize_number_from_string;
     use serde_json::{self, Value};
     use serde_json::{from_str, json};
-    use serde_with::{serde_as, DisplayFromStr};
     use std::time::Instant;
-    use std::{fmt::format, process::Output, thread, vec};
+    use std::{fmt::Debug, fmt::Display, process::Output, thread, vec};
     use thirtyfour::prelude::*;
     use tokio::net::TcpStream;
 
@@ -136,13 +136,12 @@ pub mod animeunity {
         OVA,
     }
 
-    #[serde_as]
     #[derive(Clone, Serialize, Deserialize, Debug)]
     pub struct SearchEntry {
         #[serde(rename(deserialize = "title_eng"))]
         title: String,
         episodes_count: usize,
-        #[serde_as(as = "DisplayFromStr")]
+        #[serde(deserialize_with = "deserialize_number_from_string")]
         date: usize,
         #[serde(rename = "type")]
         entry_type: EntryType,
@@ -181,6 +180,7 @@ pub mod animeunity {
             .to_owned();
 
         let output = serde_json::from_value::<Vec<SearchEntry>>(search_res_json)?;
+        println!("{:#?}", output);
 
         Ok(output)
     }
