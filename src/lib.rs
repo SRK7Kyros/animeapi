@@ -136,6 +136,7 @@ pub mod animeunity {
 
     #[derive(Clone, Serialize, Deserialize, Debug)]
     pub struct SearchEntry {
+        #[serde(rename = "title-eng")]
         title: String,
         episodes_count: usize,
         date: usize,
