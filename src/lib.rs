@@ -8,6 +8,7 @@ use scraper::{Html, Selector};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::fmt;
+use std::time::Instant;
 use thirtyfour::prelude::*;
 use tokio::{
     io::{stdout, AsyncWriteExt},
@@ -118,6 +119,7 @@ pub mod animeunity {
     use scraper::{Html, Selector};
     use serde_json::{self, Value};
     use serde_json::{from_str, json};
+    use std::time::Instant;
     use std::{fmt::format, process::Output, thread, vec};
     use thirtyfour::prelude::*;
     use tokio::net::TcpStream;
@@ -126,6 +128,7 @@ pub mod animeunity {
         let client = get_client().await?;
 
         let html_res = client.get("https://www.animeunity.it").send().await?;
+        let now = Instant::now();
         let html_res_headers = html_res.headers().clone();
 
         let mut search_req_headers = HeaderMap::new();
@@ -151,6 +154,8 @@ pub mod animeunity {
         let search_res = search_req.send().await?;
 
         let search_res_json = search_res.json().await?;
+        let elapsed = now.elapsed();
+        println!("Elapsed: {:.2?}", elapsed);
 
         let output: Vec<Anime> = vec![];
         Ok(search_res_json)
