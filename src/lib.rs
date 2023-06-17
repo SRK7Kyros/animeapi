@@ -140,8 +140,8 @@ pub mod animeunity {
     pub struct SearchEntry {
         #[serde(rename = "title-eng")]
         title: String,
-        #[serde_as(as = "DisplayFromStr")]
         episodes_count: usize,
+        #[serde_as(as = "DisplayFromStr")]
         date: usize,
         #[serde(rename = "type")]
         entry_type: EntryType,
