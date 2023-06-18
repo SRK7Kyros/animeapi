@@ -132,6 +132,7 @@ pub mod animeunity {
     use crate::{get_client, get_csrf_token, Anime, AnimeStuff};
     use anyhow::{Error as AHError, Ok, Result as AHResult};
     use reqwest::header::{self, HeaderMap, COOKIE};
+    use reqwest::Body;
     use scraper::{Html, Selector};
     use serde::{Deserialize, Serialize};
     use serde_aux::field_attributes::deserialize_number_from_string;
@@ -177,12 +178,23 @@ pub mod animeunity {
         search_req_headers.insert("X-CSRF-TOKEN", csrf_token.parse().unwrap());
         search_req_headers.insert("Content-Type", "application/json".parse().unwrap());
 
-        let search_req_body = json!({"title": term,"type":false,"year":false,"order":false,"status":false,"genres":false,"offset":0,"dubbed":false,"season":false}).to_string();
+        let search_req_body = json!({
+            "title": term,
+            "type":false,
+            "year":false,
+            "order":false,
+            "status":false,
+            "genres":false,
+            "offset":0,
+            "dubbed":false,
+            "season":false});
+
         let search_req = client
             .post("https://www.animeunity.it/archivio/get-animes")
-            .body(search_req_body)
+            .json(&search_req_body)
             .headers(search_req_headers);
 
+        println!("got here!");
         let search_res = search_req.send().await?;
         let search_res_json = search_res.json::<Value>().await?;
 
