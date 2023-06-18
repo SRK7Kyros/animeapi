@@ -194,16 +194,20 @@ pub mod animeunity {
             .json(&search_req_body)
             .headers(search_req_headers);
 
-        println!("got here!");
         let search_res = search_req.send().await?;
+        println!("got here!");
+
         let search_res_json = search_res.json::<Value>().await?;
+        println!("got here!");
 
         let records = search_res_json
             .get("records")
             .ok_or(AHError::msg("No records obtained"))?
             .to_owned();
+        println!("got here!");
 
         let output = serde_json::from_value::<Vec<SearchEntry>>(records.clone())?;
+        println!("got here!");
 
         Ok((output, records))
     }
