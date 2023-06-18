@@ -179,7 +179,7 @@ pub mod animeunity {
 
         let search_req_body = json!({"title": term,"type":false,"year":false,"order":false,"status":false,"genres":false,"offset":0,"dubbed":false,"season":false}).to_string();
         let search_req = client
-            .post("https://www.animeunity.it/get-animes")
+            .post("https://www.animeunity.it/archivio/get-animes")
             .body(search_req_body)
             .headers(search_req_headers);
 
