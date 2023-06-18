@@ -135,7 +135,7 @@ pub mod animeunity {
     use scraper::{Html, Selector};
     use serde::{Deserialize, Serialize};
     use serde_aux::field_attributes::deserialize_number_from_string;
-    use serde_json::{self, Value};
+    use serde_json::{self, to_string_pretty, Value};
     use serde_json::{from_str, json};
     use std::time::Instant;
     use std::{fmt::Debug, fmt::Display, process::Output, thread, vec};
@@ -184,15 +184,15 @@ pub mod animeunity {
             .headers(search_req_headers);
 
         let search_res = search_req.send().await?;
+        let search_res_json = search_res.json::<Value>().await?;
 
-        let search_res_json = search_res
-            .json::<Value>()
-            .await?
+        println!("{}", to_string_pretty(&search_res_json)?);
+        let records = search_res_json
             .get("records")
             .ok_or(AHError::msg("No records obtained"))?
             .to_owned();
 
-        let output = serde_json::from_value::<Vec<SearchEntry>>(search_res_json)?;
+        let output = serde_json::from_value::<Vec<SearchEntry>>(records)?;
 
         Ok(output)
     }
