@@ -193,7 +193,6 @@ pub mod animeunity {
             .to_owned();
 
         let output = serde_json::from_value::<Vec<SearchEntry>>(search_res_json)?;
-        println!("{:#?}", output);
 
         Ok(output)
     }
