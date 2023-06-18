@@ -177,7 +177,7 @@ pub mod animeunity {
         search_req_headers.insert("X-CSRF-TOKEN", csrf_token.parse().unwrap());
         search_req_headers.insert("Content-Type", "application/json".parse().unwrap());
 
-        let search_req_body = json!({ "title": term }).to_string();
+        let search_req_body = json!({"title": term,"type":false,"year":false,"order":false,"status":false,"genres":false,"offset":0,"dubbed":false,"season":false}).to_string();
         let search_req = client
             .post("https://www.animeunity.it/livesearch")
             .body(search_req_body)
