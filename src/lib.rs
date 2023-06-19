@@ -165,7 +165,7 @@ pub mod animeunity {
         id: usize,
     }
 
-    pub async fn search(term: &str) -> AHResult<(Vec<SearchEntry>, Value)> {
+    pub async fn search(term: &str) -> AHResult<(Value)> {
         let client = get_client().await?;
 
         let html_res = client.get("https://www.animeunity.it").send().await?;
@@ -195,20 +195,14 @@ pub mod animeunity {
             .headers(search_req_headers);
 
         let search_res = search_req.send().await?;
-        println!("1");
 
         let search_res_json = search_res.json::<Value>().await?;
-        println!("2");
 
         let records = search_res_json
             .get("records")
             .ok_or(AHError::msg("No records obtained"))?
             .to_owned();
-        println!("3");
-
-        let output = serde_json::from_value::<Vec<SearchEntry>>(records.clone())?;
-        println!("4");
-        Ok((output, records))
+        Ok(records)
     }
 
     pub async fn get_token(headless: bool) -> AHResult<String> {
