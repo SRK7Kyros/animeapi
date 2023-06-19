@@ -167,6 +167,7 @@ pub mod animeunity {
 
     pub async fn search(term: &str) -> AHResult<(Vec<SearchEntry>, Value)> {
         let client = get_client().await?;
+        println!("1");
 
         let html_res = client.get("https://www.animeunity.it").send().await?;
 
@@ -177,6 +178,7 @@ pub mod animeunity {
         search_req_headers.insert("X-Requested-With", "XMLHttpRequest".parse().unwrap());
         search_req_headers.insert("X-CSRF-TOKEN", csrf_token.parse().unwrap());
         search_req_headers.insert("Content-Type", "application/json".parse().unwrap());
+        println!("2");
 
         let search_req_body = json!({
             "title": term,
@@ -195,6 +197,7 @@ pub mod animeunity {
             .headers(search_req_headers);
 
         let search_res = search_req.send().await?;
+        println!("3");
 
         let search_res_json = search_res.json::<Value>().await?;
 
@@ -204,7 +207,7 @@ pub mod animeunity {
             .to_owned();
 
         let output = serde_json::from_value::<Vec<SearchEntry>>(records.clone())?;
-
+        println!("4");
         Ok((output, records))
     }
 
