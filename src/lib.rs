@@ -1,22 +1,12 @@
-use anyhow::{Error as AHError, Ok as AHOk, Result as AHResult};
-use reqwest::{
-    self,
-    header::{self, HeaderMap, HeaderValue},
-    Client,
-};
+use anyhow::{Error as AHError, Result as AHResult};
+use reqwest::{self, header::HeaderMap, Client};
 use scraper::{Html, Selector};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
+use std::future::Future;
 use std::time::Instant;
-use std::{fmt, future::Future};
 use thirtyfour::prelude::*;
-use tokio::{
-    io::{stdout, AsyncWriteExt},
-    net::TcpStream,
-    process::Child,
-    spawn,
-    sync::Mutex,
-};
+use tokio::process::Child;
 
 pub async fn time<T: Future>(fn_name: String, future: T) -> AHResult<String> {
     let now = Instant::now();
@@ -136,19 +126,14 @@ impl AnimeStuff for Anime {
 }
 
 pub mod animeunity {
-    use crate::{get_client, get_csrf_token, Anime, AnimeStuff};
+    use crate::{get_client, get_csrf_token};
     use anyhow::{Error as AHError, Ok, Result as AHResult};
-    use reqwest::header::{self, HeaderMap, COOKIE};
-    use reqwest::Body;
-    use scraper::{Html, Selector};
+    use reqwest::header::HeaderMap;
     use serde::{Deserialize, Serialize};
     use serde_aux::field_attributes::deserialize_number_from_string;
-    use serde_json::{self, to_string_pretty, Value};
-    use serde_json::{from_str, json};
-    use std::time::Instant;
-    use std::{fmt::Debug, fmt::Display, process::Output, thread, vec};
-    use thirtyfour::prelude::*;
-    use tokio::net::TcpStream;
+    use serde_json::json;
+    use serde_json::{self, Value};
+    use std::{fmt::Debug, vec};
 
     #[derive(Clone, Serialize, Deserialize, Debug)]
     pub enum EntryType {
@@ -172,7 +157,7 @@ pub mod animeunity {
         id: usize,
     }
 
-    pub async fn search(term: &str) -> AHResult<(Value)> {
+    pub async fn search(term: &str) -> AHResult<Value> {
         let client = get_client().await?;
 
         let html_res = client.get("https://www.animeunity.it").send().await?;
