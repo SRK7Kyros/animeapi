@@ -7,8 +7,8 @@ use reqwest::{
 use scraper::{Html, Selector};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
-use std::fmt;
 use std::time::Instant;
+use std::{fmt, future::Future};
 use thirtyfour::prelude::*;
 use tokio::{
     io::{stdout, AsyncWriteExt},
@@ -17,6 +17,13 @@ use tokio::{
     spawn,
     sync::Mutex,
 };
+
+pub async fn time<T: Future>(fn_name: String, future: T) -> AHResult<String> {
+    let now = Instant::now();
+    future.await;
+    let elapsed = now.elapsed();
+    Ok(format!("{} lasted {:.2?}", fn_name, elapsed))
+}
 
 pub async fn merge(a: &mut Value, b: &mut Value) -> AHResult<()> {
     let a = a.as_object_mut().ok_or(AHError::msg(
