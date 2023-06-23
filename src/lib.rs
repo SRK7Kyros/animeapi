@@ -131,8 +131,8 @@ pub mod animeunity {
     use reqwest::header::HeaderMap;
     use serde::{Deserialize, Serialize};
     use serde_aux::field_attributes::deserialize_number_from_string;
-    use serde_json::json;
     use serde_json::{self, Value};
+    use serde_json::{json, to_string_pretty};
 
     use std::{fmt::Debug, vec};
 
@@ -192,6 +192,7 @@ pub mod animeunity {
         println!("robo3");
 
         let search_res_json = search_res.json::<Value>().await?;
+        println!("{}", to_string_pretty(&search_res_json)?);
 
         let records = search_res_json
             .get("records")
