@@ -160,7 +160,7 @@ pub mod animeunity {
 
     pub async fn search(term: &str) -> AHResult<Value> {
         let client = get_client().await?;
-        println!("robo");
+        println!("robo1");
         let html_res = client.get("https://www.animeunity.it").send().await?;
 
         let body = html_res.text().await?;
@@ -170,7 +170,7 @@ pub mod animeunity {
         search_req_headers.insert("X-Requested-With", "XMLHttpRequest".parse().unwrap());
         search_req_headers.insert("X-CSRF-TOKEN", csrf_token.parse().unwrap());
         search_req_headers.insert("Content-Type", "application/json".parse().unwrap());
-        println!("robo");
+        println!("robo2");
 
         let search_req_body = json!({
             "title": term,
@@ -189,7 +189,7 @@ pub mod animeunity {
             .headers(search_req_headers);
 
         let search_res = search_req.send().await?;
-        println!("robo");
+        println!("robo3");
 
         let search_res_json = search_res.json::<Value>().await?;
 
@@ -197,7 +197,7 @@ pub mod animeunity {
             .get("records")
             .ok_or(AHError::msg("No records obtained"))?
             .to_owned();
-        println!("robo");
+        println!("robo4");
 
         Ok(records)
     }
