@@ -161,7 +161,6 @@ pub mod animeunity {
     pub async fn search(term: &str) -> AHResult<Value> {
         let client = get_client().await?;
         let html_req = client.get("https://www.animeunity.it");
-        println!("{:?}", html_req);
 
         let html_res = html_req.send().await?;
 
@@ -186,8 +185,10 @@ pub mod animeunity {
 
         let search_req = client
             .post("https://www.animeunity.cc/archivio/get-animes")
-            .json(&search_req_body)
-            .headers(search_req_headers);
+            .json(&search_req_body);
+        println!("{:?}", search_req);
+
+        search_req.headers(search_req_headers);
 
         let search_res = search_req.send().await?;
 
