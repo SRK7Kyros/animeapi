@@ -129,6 +129,7 @@ pub mod animeunity {
     use crate::{get_client, get_csrf_token};
     use anyhow::{Error as AHError, Ok, Result as AHResult};
     use reqwest::header::HeaderMap;
+    use reqwest::Client;
     use serde::{Deserialize, Serialize};
     use serde_aux::field_attributes::deserialize_number_from_string;
     use serde_json::{self, Value};
@@ -156,6 +157,26 @@ pub mod animeunity {
         image_url: String,
         slug: String,
         id: usize,
+    }
+
+    pub async fn get_animeunity_client() -> AHResult<Client> {
+        let headers = HeaderMap::new();
+
+        let html_res = reqwest::get("https://www.animeunity.it").await?;
+        println!("{:?}", html_res);
+
+        let body = html_res.text().await?;
+        let csrf_token = get_csrf_token(body).await?;
+        let mut search_req_headers = HeaderMap::new();
+
+        search_req_headers.insert("X-Requested-With", "XMLHttpRequest".parse().unwrap());
+        search_req_headers.insert("X-CSRF-TOKEN", csrf_token.parse().unwrap());
+        search_req_headers.insert("Content-Type", "application/json".parse().unwrap());
+        let client = Client::builder()
+            .default_headers(headers)
+            .cookie_store(true)
+            .build()?;
+        Ok(client)
     }
 
     pub async fn search(term: &str) -> AHResult<Value> {
