@@ -160,7 +160,10 @@ pub mod animeunity {
 
     pub async fn search(term: &str) -> AHResult<Value> {
         let client = get_client().await?;
-        let html_res = client.get("https://www.animeunity.it").send().await?;
+        let html_req = client.get("https://www.animeunity.it");
+        println!("{:?}", html_req);
+
+        let html_res = html_req.send().await?;
 
         let body = html_res.text().await?;
         let csrf_token = get_csrf_token(body).await?;
