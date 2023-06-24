@@ -185,9 +185,7 @@ pub mod animeunity {
         Ok(client)
     }
 
-    pub async fn search(term: &str) -> AHResult<Value> {
-        let client = get_animeunity_client().await?;
-
+    pub async fn search(term: &str, client: Client) -> AHResult<Value> {
         let search_req_body = json!({
             "title": term,
             "type":false,
