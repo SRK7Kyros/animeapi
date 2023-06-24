@@ -128,8 +128,9 @@ impl AnimeStuff for Anime {
 pub mod animeunity {
     use crate::{get_client, get_csrf_token};
     use anyhow::{Error as AHError, Ok, Result as AHResult};
+    use reqwest::cookie::{CookieStore, Jar};
     use reqwest::header::HeaderMap;
-    use reqwest::Client;
+    use reqwest::{Client, Url};
     use serde::{Deserialize, Serialize};
     use serde_aux::field_attributes::deserialize_number_from_string;
     use serde_json::{self, Value};
@@ -161,11 +162,17 @@ pub mod animeunity {
 
     pub async fn get_animeunity_client() -> AHResult<Client> {
         let mut headers = HeaderMap::new();
+        let jar = Jar::default();
 
         let html_res = reqwest::get("https://www.animeunity.it").await?;
 
-        let set_cookie_headers = html_res.headers().get_all("set-cookie");
-        println!("{:?}", set_cookie_headers);
+        let mut set_cookie_headers = html_res.headers().get_all("set-cookie").iter();
+        jar.set_cookies(
+            &mut set_cookie_headers,
+            &"https://www.animeunity.cc".parse::<Url>()?,
+        );
+
+        println!("{:?}", jar);
 
         let body = html_res.text().await?;
         let csrf_token = get_csrf_token(body).await?;
