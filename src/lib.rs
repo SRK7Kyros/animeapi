@@ -160,18 +160,17 @@ pub mod animeunity {
     }
 
     pub async fn get_animeunity_client() -> AHResult<Client> {
-        let headers = HeaderMap::new();
+        let mut headers = HeaderMap::new();
 
         let html_res = reqwest::get("https://www.animeunity.it").await?;
         println!("{:?}", html_res);
 
         let body = html_res.text().await?;
         let csrf_token = get_csrf_token(body).await?;
-        let mut search_req_headers = HeaderMap::new();
 
-        search_req_headers.insert("X-Requested-With", "XMLHttpRequest".parse().unwrap());
-        search_req_headers.insert("X-CSRF-TOKEN", csrf_token.parse().unwrap());
-        search_req_headers.insert("Content-Type", "application/json".parse().unwrap());
+        headers.insert("X-Requested-With", "XMLHttpRequest".parse().unwrap());
+        headers.insert("X-CSRF-TOKEN", csrf_token.parse().unwrap());
+        headers.insert("Content-Type", "application/json".parse().unwrap());
         let client = Client::builder()
             .default_headers(headers)
             .cookie_store(true)
@@ -180,18 +179,7 @@ pub mod animeunity {
     }
 
     pub async fn search(term: &str) -> AHResult<Value> {
-        let client = get_client().await?;
-        let html_req = client.get("https://www.animeunity.it");
-
-        let html_res = html_req.send().await?;
-
-        let body = html_res.text().await?;
-        let csrf_token = get_csrf_token(body).await?;
-        let mut search_req_headers = HeaderMap::new();
-
-        search_req_headers.insert("X-Requested-With", "XMLHttpRequest".parse().unwrap());
-        search_req_headers.insert("X-CSRF-TOKEN", csrf_token.parse().unwrap());
-        search_req_headers.insert("Content-Type", "application/json".parse().unwrap());
+        let client = get_animeunity_client().await?;
 
         let search_req_body = json!({
             "title": term,
@@ -204,12 +192,10 @@ pub mod animeunity {
             "dubbed":false,
             "season":false});
 
-        let mut search_req = client
+        let search_req = client
             .post("https://www.animeunity.cc/archivio/get-animes")
             .json(&search_req_body);
         println!("{:?}", search_req);
-
-        search_req = search_req.headers(search_req_headers);
 
         let search_res = search_req.send().await?;
 
