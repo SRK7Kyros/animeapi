@@ -163,7 +163,9 @@ pub mod animeunity {
         let mut headers = HeaderMap::new();
 
         let html_res = reqwest::get("https://www.animeunity.it").await?;
-        println!("{:?}", html_res);
+
+        let set_cookie_headers = html_res.headers().get_all("set-cookie");
+        println!("{:?}", set_cookie_headers);
 
         let body = html_res.text().await?;
         let csrf_token = get_csrf_token(body).await?;
