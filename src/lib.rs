@@ -4,15 +4,19 @@ use scraper::{Html, Selector};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::future::Future;
+use std::process::Output;
 use std::time::Instant;
 use thirtyfour::prelude::*;
 use tokio::process::Child;
 
-pub async fn time<T: Future>(fn_name: String, future: T) -> AHResult<String> {
+pub async fn time<T: Future>(
+    fn_name: &str,
+    future: T,
+) -> AHResult<(String, <T as Future>::Output)> {
     let now = Instant::now();
-    future.await;
+    let result = future.await;
     let elapsed = now.elapsed();
-    Ok(format!("{} lasted {:.2?}", fn_name, elapsed))
+    Ok((format!("{} lasted {:.2?}", fn_name, elapsed), result))
 }
 
 pub async fn merge(a: &mut Value, b: &mut Value) -> AHResult<()> {
