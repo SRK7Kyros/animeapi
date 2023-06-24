@@ -183,12 +183,12 @@ pub mod animeunity {
             "dubbed":false,
             "season":false});
 
-        let search_req = client
+        let mut search_req = client
             .post("https://www.animeunity.cc/archivio/get-animes")
             .json(&search_req_body);
         println!("{:?}", search_req);
 
-        search_req.headers(search_req_headers);
+        search_req = search_req.headers(search_req_headers);
 
         let search_res = search_req.send().await?;
 
