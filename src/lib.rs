@@ -172,8 +172,6 @@ pub mod animeunity {
             &"https://www.animeunity.cc".parse::<Url>()?,
         );
 
-        println!("{:?}", jar);
-
         let body = html_res.text().await?;
         let csrf_token = get_csrf_token(body).await?;
 
@@ -182,7 +180,7 @@ pub mod animeunity {
         headers.insert("Content-Type", "application/json".parse().unwrap());
         let client = Client::builder()
             .default_headers(headers)
-            .cookie_store(true)
+            .cookie_provider(jar.into())
             .build()?;
         Ok(client)
     }
@@ -204,7 +202,6 @@ pub mod animeunity {
         let search_req = client
             .post("https://www.animeunity.cc/archivio/get-animes")
             .json(&search_req_body);
-        println!("{:?}", search_req);
 
         let search_res = search_req.send().await?;
 
