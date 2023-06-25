@@ -4,7 +4,6 @@ use scraper::{Html, Selector};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::future::Future;
-use std::process::Output;
 use std::time::Instant;
 use thirtyfour::prelude::*;
 use tokio::process::Child;
