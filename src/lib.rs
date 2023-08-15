@@ -172,7 +172,7 @@ pub mod animeunity {
         let mut set_cookie_headers = html_res.headers().get_all("set-cookie").iter();
         jar.set_cookies(
             &mut set_cookie_headers,
-            &"https://www.animeunity.cc".parse::<Url>()?,
+            &"https://www.animeunity.to".parse::<Url>()?,
         );
 
         let body = html_res.text().await?;
