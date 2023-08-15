@@ -207,7 +207,6 @@ pub mod animeunity {
         let search_res = search_req.send().await?;
 
         let search_res_json = search_res.json::<Value>().await?;
-        println!("{}", to_string_pretty(&search_res_json)?);
         let records = search_res_json
             .get("records")
             .ok_or(AHError::msg("No records obtained"))?
