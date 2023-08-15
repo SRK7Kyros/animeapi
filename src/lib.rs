@@ -201,7 +201,7 @@ pub mod animeunity {
             "season":false});
 
         let search_req = client
-            .post("https://www.animeunity.cc/archivio/get-animes")
+            .post("https://www.animeunity.to/archivio/get-animes")
             .json(&search_req_body);
 
         let search_res = search_req.send().await?;
